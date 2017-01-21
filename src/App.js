@@ -511,10 +511,10 @@ class App extends Component {
     <ErrorModal 
       showError={this.state.showError} 
       hideError={this.hideError}/>
-    <Grid columns={12}>
+    
     {this.state.hasAccount&&this.state.gethPasswordEntered?
       <SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
-        <div>
+        <Grid columns={12}>
           <Span columns={12}>
           <SelectAttribute value={this.state.attributeType} onSelect={this.onAttributeType}/>
           </Span>
@@ -524,7 +524,7 @@ class App extends Component {
               disabled={!this.state.petId}  onChange={this.onAttributeValue}
             />
           </Span>
-          <Span columns={4}>      
+          <Span columns={4} last>      
               <Checkbox disabled={!this.state.petId}  label="Add Encryption" defaultChecked={true} onCheck={this.toggleAdditionalEncryption}/>
           </Span>
           <Span columns={12}>
@@ -537,11 +537,11 @@ class App extends Component {
             );
           })}
           </TableColumns>              
-        </div>
+        </Grid>
       </SyncWrap>:
       <GethLogin hasAccount={this.state.hasAccount} onSuccessLogin={this.onGethLogin}/>
     }
-    </Grid>
+    
     <div className='whiteSpace'></div>
     <div className='whiteSpace'></div>
     <div className='whiteSpace'></div>
