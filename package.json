@@ -1,0 +1,26 @@
+{
+  "name": "SkyPetGUI",
+  "version": "0.0.1",
+  "private": true,
+  "devDependencies": {
+    "concurrently": "^3.1.0",
+    "react-scripts": "0.8.5"
+  },
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "material-ui": "^0.16.7",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-tap-event-plugin": "^2.0.1",
+    "try-require": "^1.2.1",
+    "uws": "^0.12.0",
+    "web3": "^0.18.2"
+  },
+  "scripts": {
+    "start": "concurrently --kill-others \"react-scripts start\" \"npm run test-serv\"",
+    "test-serv":"node testWSServer.js",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
