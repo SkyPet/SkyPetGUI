@@ -3,7 +3,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 import Flexbox from 'flexbox-react';
 //import {Container, Row, Col} from 'react-pure-grid';
 //import {Container, Grid, Breakpoint, Span} from 'react-responsive-grid'
-const {Grid, Row, Col} = require('react-flexbox-grid');
+//const {Grid, Row, Col} = require('react-flexbox-grid');
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
@@ -257,7 +257,7 @@ const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
 
 
 
-const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit})=>
+const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, formValidation})=>
 <div>
 <SelectAttribute value={selectValue} onSelect={onSelect}/>
 <br/>
@@ -272,8 +272,11 @@ const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, o
   defaultChecked={true} 
   onCheck={onCheck}/>
 <br/>
+{isChecked?
+<TextField floatingLabelText="Password" type="password" onChange={onPassword}/>:null}
+<br/>
 <RaisedButton 
-  disabled={shouldDisable} 
+  disabled={formValidation()} 
   onClick={onSubmit} 
   label={<span>Submit New Result (costs {cost} Ether)</span>}/>
 </div>          
@@ -463,17 +466,15 @@ class App extends Component {
     console.log(attVal);
     console.log(this.state.attributeValue);
     this.submitAttribute(attVal, attVal.attributeType);
-    this.setState({
+    /*this.setState({
       askForPassword:false,
       password:""
-    });
+    });*/
   }
   onSubmit=()=>{
     var obj={};
     if(this.state.addedEncryption){
-      this.setState({
-        askForPassword:true
-      })
+      this.onPassword();
     }
     else{
       this.submitAttribute(formatAttribute(this.state.attributeType,this.state.attributeValue), this.state.attributeValue);
@@ -530,6 +531,9 @@ class App extends Component {
       gethPasswordEntered:true
     })
   }
+  entryValidation=()=>{
+    return !(this.state.petId&&(this.state.password||!this.state.addedEncryption)&&this.state.attributeValue);
+  }
   render(){
 
     const mainStyle = {
@@ -546,16 +550,11 @@ class App extends Component {
       account={this.state.account} 
       moneyInAccount={this.state.moneyInAccount}
       contractAddress={this.state.contractAddress}/>
-    <PasswordModal 
-      onPassword={this.onPassword} 
-      setPassword={this.setPassword}  
-      hidePasswordModal={this.hidePasswordModal} 
-      askForPassword={this.state.askForPassword}/>
+   
     <ErrorModal 
       showError={this.state.showError} 
       hideError={this.hideError}/>
     <Dialog
-      modal={true}
       open={this.state.showEntry}
       onRequestClose={this.hideEntryModal}
     >
@@ -567,7 +566,11 @@ class App extends Component {
         onText={this.onAttributeValue}
         shouldDisable={!this.state.petId}
         onSubmit={this.onSubmit}
+        onPassword={this.setPassword}
+        isChecked={this.state.addedEncryption}
+        formValidation={this.entryValidation}
       />
+
     </Dialog>
     
     <div style={mainStyle}>
