@@ -1,7 +1,9 @@
 import React,  {  Component } from 'react';
 import injectTapEventPlugin from 'react-tap-event-plugin';
+import Flexbox from 'flexbox-react';
 //import {Container, Row, Col} from 'react-pure-grid';
-import {Container, Grid, Breakpoint, Span} from 'react-responsive-grid'
+//import {Container, Grid, Breakpoint, Span} from 'react-responsive-grid'
+const {Grid, Row, Col} = require('react-flexbox-grid');
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
@@ -69,6 +71,7 @@ import {
   Stepper,
   StepLabel,
 } from 'material-ui/Stepper';
+const centerComponent={display: 'flex', justifyContent: 'center'};
 const blockChainView='https://testnet.etherscan.io/address/';
 const selection=[
     "Temperament",
@@ -230,7 +233,7 @@ const CustomToolBar=({account, moneyInAccount, contractAddress})=>
 
 const TableColumns=({success, children})=>
 <Table>
-    <TableHeader>
+    <TableHeader adjustForCheckbox={false} displaySelectAll={false}>
       <TableRow>
         <TableHeaderColumn>TimeStamp</TableHeaderColumn>
         <TableHeaderColumn>Attribute</TableHeaderColumn>
@@ -238,18 +241,44 @@ const TableColumns=({success, children})=>
       </TableRow>
     </TableHeader>
     {success?
-    <TableBody>
+    <TableBody displayRowCheckbox={false}>
     {children}
     </TableBody>
     :null}
 </Table>
 
-const SubmitPassword=({onCreate, onType, hasSubmitted=false})=>
+const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
 <form onSubmit={(e)=>{e.preventDefault();onCreate();}}>
     <TextField floatingLabelText="Password" type="password" onChange={(e)=>{onType(e.target.value);}}/>
-    {hasSubmitted?<CircularProgress size={40}/>:
-    <FlatButton label="Submit" primary={true} />}
+    {hasSubmitted?<CircularProgress size={40}/>:error?<FlatButton label={error} />:
+    <FlatButton label="Submit"/>}
 </form>
+
+
+
+
+const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit})=>
+<div>
+<SelectAttribute value={selectValue} onSelect={onSelect}/>
+<br/>
+<TextField
+  floatingLabelText="Value"
+  disabled={shouldDisable}  onChange={onText}
+/>
+<br/>
+<Checkbox 
+  disabled={shouldDisable}  
+  label="Add Encryption" 
+  defaultChecked={true} 
+  onCheck={onCheck}/>
+<br/>
+<RaisedButton 
+  disabled={shouldDisable} 
+  onClick={onSubmit} 
+  label={<span>Submit New Result (costs {cost} Ether)</span>}/>
+</div>          
+
+
 class GethLogin extends Component{
   constructor(props){
     super(props);
@@ -259,8 +288,11 @@ class GethLogin extends Component{
       password:""
     };
     socket.on('passwordError', (event, arg)=>{
-      this.setState({error:arg, waitingResults:false});
-    });
+      this.setState({error:arg, waitingResults:false}, 
+        setTimeout(()=>{
+          this.setState({
+            error:""
+        })}, 3000)  )});
     socket.on('successLogin', (event, arg)=>{
       this.setState({
         waitingResults:false
@@ -285,8 +317,10 @@ class GethLogin extends Component{
     //const contentStyle = {margin: '0 16px'};
 
     return (
-      <div><p>{this.props.hasAccount?"Password to login to account":"Enter a password to generate your account.  Don't forget this password!"}</p>
-        <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword} hasSubmitted={this.state.waitingResults}/></div>
+      <Flexbox flexDirection="column">
+        <p>{this.props.hasAccount?"Password to login to account":"Enter a password to generate your account.  Don't forget this password!"}</p>
+        <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword} hasSubmitted={this.state.waitingResults} error={this.state.error}/>
+      </Flexbox>
     );
   }
 }
@@ -304,7 +338,7 @@ const SelectAttribute=({value, onSelect})=>
 </SelectField>
 
 const MyProgressBar=({value})=>{
-  return value>0?<CircularProgress  key="firstCircle" size={80} thickness={5} mode="determinate"  value={value*100}/>:<CircularProgress key="secondCircle" size={80} thickness={5} />
+  return value>0?<CircularProgress key="firstCircle" size={80} thickness={5} mode="determinate"  value={value*100}/>:<CircularProgress key="secondCircle" size={80} thickness={5} />
 }
 const SyncWrap=({isSyncing, children, progress})=>{
   return isSyncing?<MyProgressBar value={progress}/>:children
@@ -323,6 +357,7 @@ class App extends Component {
       gethPasswordEntered:false,
       successSearch:false,
       cost:0,
+      showEntry:false,
       moneyInAccount:0,
       //show:false,
       showError:"",
@@ -463,16 +498,16 @@ class App extends Component {
     }
     
   }
-  /*showModal=()=>{
+  showEntryModal=()=>{
     this.setState({
-      show:true
+      showEntry:true
     });
   }
-  hideModal=()=>{
+  hideEntryModal=()=>{
     this.setState({
-      show:false
+      showEntry:false
     });
-  }*/
+  }
 
   hidePasswordModal=()=>{
     this.setState({askForPassword: false});
@@ -496,6 +531,14 @@ class App extends Component {
     })
   }
   render(){
+
+    const mainStyle = {
+      //height: 100,
+      //width: 100,
+      margin: 20,
+      //textAlign: 'center',
+      display: 'inline-block',
+    };
       return(
 <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
   <div>
@@ -511,25 +554,27 @@ class App extends Component {
     <ErrorModal 
       showError={this.state.showError} 
       hideError={this.hideError}/>
+    <Dialog
+      modal={true}
+      open={this.state.showEntry}
+      onRequestClose={this.hideEntryModal}
+    >
+      <EntryForm 
+        selectValue={this.state.attributeType}
+        onSelect={this.onAttribute}
+        onCheck={this.toggleAdditionalEncryption}
+        cost={this.state.cost}
+        onText={this.onAttributeValue}
+        shouldDisable={!this.state.petId}
+        onSubmit={this.onSubmit}
+      />
+    </Dialog>
     
+    <div style={mainStyle}>
     {this.state.hasAccount&&this.state.gethPasswordEntered?
       <SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
-        <Grid columns={12}>
-          <Span columns={12}>
-          <SelectAttribute value={this.state.attributeType} onSelect={this.onAttributeType}/>
-          </Span>
-          <Span columns={8}>
-            <TextField
-              floatingLabelText="Value"
-              disabled={!this.state.petId}  onChange={this.onAttributeValue}
-            />
-          </Span>
-          <Span columns={4} last>      
-              <Checkbox disabled={!this.state.petId}  label="Add Encryption" defaultChecked={true} onCheck={this.toggleAdditionalEncryption}/>
-          </Span>
-          <Span columns={12}>
-            <RaisedButton disabled={!this.state.petId} onClick={this.onSubmit} label={<span>Submit New Result (costs {this.state.cost} Ether)</span>}/>
-          </Span>
+        <div>
+          <RaisedButton label="Add Entry" onClick={this.showEntryModal}/>
           <TableColumns success={this.state.successSearch}>
           {this.state.historicalData.map((val, index)=>{
             return(
@@ -537,10 +582,11 @@ class App extends Component {
             );
           })}
           </TableColumns>              
-        </Grid>
+        </div>
       </SyncWrap>:
       <GethLogin hasAccount={this.state.hasAccount} onSuccessLogin={this.onGethLogin}/>
     }
+    </div>
     
     <div className='whiteSpace'></div>
     <div className='whiteSpace'></div>
