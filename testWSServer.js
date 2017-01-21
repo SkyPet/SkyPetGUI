@@ -38,7 +38,7 @@ wss.on('connection', function(ws) {
             ws.send(makeObj('petId', Ids.hashId));
             ws.send(makeObj('accounts', "MyTestAccount"));
             ws.send(makeObj('constractAddress', "MyTestContractAddress"));    
-            ws.send(makeObj('retrievedData'), [{timestampe:new Date(), attributeText:"Hello World", isEncrypted:false, attributeType:"0"}])
+            ws.send(makeObj('retrievedData', [{timestamp:new Date(), attributeText:"Hello World", isEncrypted:false, attributeType:"0"}]))
             ws.send(makeObj('moneyInAccount',1000));
             ws.send(makeObj('cost',1));
         }

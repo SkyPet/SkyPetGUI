@@ -1,5 +1,6 @@
 import React,  {  Component } from 'react';
 import injectTapEventPlugin from 'react-tap-event-plugin';
+import {Container, Row, Col} from 'react-pure-grid';
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
@@ -130,17 +131,15 @@ class TblRow extends Component {/*=({attributeText, isEncrypted, onDecrypt, time
   }
   render(){
     return(
-      <div>
-  <PasswordModal onPassword={this.onPasswordSubmit} setPassword={this.setPassword} hidePasswordModal={this.hideModal} askForPassword={this.state.showPasswordModal}/>
-      <TableRow>             
+      <TableRow>   
+        <PasswordModal onPassword={this.onPasswordSubmit} setPassword={this.setPassword} hidePasswordModal={this.hideModal} askForPassword={this.state.showPasswordModal}/>          
         <TableRowColumn>{this.props.timestamp}</TableRowColumn>
-        <TableRowColumn> >{this.props.label}</TableRowColumn>
+        <TableRowColumn>{this.props.label}</TableRowColumn>
         <TableRowColumn>{this.state.isEncrypted?this.state.wrongPassword?<FlatButton label="Wrong Password" onClick={this.onDecrypt}/>:
             <FlatButton disabled={!this.state.isEncrypted} label="Decrypt" onClick={this.onDecrypt}/>:
           this.state.attributeText}
         </TableRowColumn>
     </TableRow>
-    </div>
     );
   }
 }
@@ -160,7 +159,7 @@ class AboutComponent extends Component {
     })
   }
   render(){
-    console.log(this.props.contractAddress)
+    //console.log(this.props.contractAddress)
     return(
       <div>
         <RaisedButton label="Learn More" primary={true} onClick={this.onAbout}/>
@@ -211,6 +210,7 @@ const PasswordModal=({onPassword, setPassword, hidePasswordModal, askForPassword
   onRequestClose={hidePasswordModal}
 >
   <SubmitPassword onCreate={onPassword} onType={setPassword}/>
+  <RaisedButton label="Cancel" onClick={hidePasswordModal}/>
 </Dialog>
 
 const CustomToolBar=({account, moneyInAccount, contractAddress})=>
@@ -222,7 +222,7 @@ const CustomToolBar=({account, moneyInAccount, contractAddress})=>
     <ToolbarTitle text="Account:" />
      {account}
      <ToolbarSeparator />
-      {moneyInAccount==0?"Ether required!  Send the account some Ether to continue":"Balance: moneyInAccount" }
+      {moneyInAccount==0?<span>Ether required!  Send the account some Ether to continue</span>:<span>Balance: {moneyInAccount}</span>}
   </ToolbarGroup>
   <AboutComponent contractAddress={contractAddress}/>
 </Toolbar>
@@ -290,12 +290,23 @@ class GethLogin extends Component{
   }
 }
 
+const SelectAttribute=({value, onSelect})=>
+<SelectField 
+  floatingLabelText="Select Attribute"
+  onChange={onSelect}
+  value={value}
+  defaultValue={0}
+>
+  {selection.map((val, index)=>{
+      return(<MenuItem key={index} value={index} primaryText={val}/>);
+  })}
+</SelectField>
 
 const MyProgressBar=({value})=>{
   return value>0?<CircularProgress  key="firstCircle" size={80} thickness={5} mode="determinate"  value={value*100}/>:<CircularProgress key="secondCircle" size={80} thickness={5} />
 }
 const SyncWrap=({isSyncing, children, progress})=>{
-  return isSyncing?<MyProgressBar value={progress}/>:{children}
+  return isSyncing?<MyProgressBar value={progress}/>:children
 }
 class App extends Component {
   constructor(props){
@@ -396,10 +407,9 @@ class App extends Component {
           attributeValue:event.target.value
       });      
   }
-  onAttributeType=(event)=>{
-    //console.log(event.target.value);
+  onAttributeType=(event, label, value)=>{
       this.setState({
-          attributeType:event.target.value
+          attributeType:value
       });      
   }
   toggleAdditionalEncryption=()=>{
@@ -414,6 +424,8 @@ class App extends Component {
   }
   onPassword=()=>{
     const attVal=Object.assign(formatAttribute(this.state.attributeType,CryptoJS.AES.encrypt(this.state.attributeValue, this.state.password).toString()), {addedEncryption:true});
+    console.log(attVal);
+    console.log(this.state.attributeValue);
     this.submitAttribute(attVal, attVal.attributeType);
     this.setState({
       askForPassword:false,
@@ -432,6 +444,10 @@ class App extends Component {
     }
   }
   submitAttribute=(formattedAttribute, attVal)=>{
+    console.log(this.state.moneyInAccount);
+    console.log(this.state.cost);
+    console.log(attVal);
+    console.log(formattedAttribute);
     if(this.state.moneyInAccount>this.state.cost){
       socket.send('addAttribute', formattedAttribute)
       this.setState({
@@ -446,7 +462,7 @@ class App extends Component {
     }
     
   }
-  showModal=()=>{
+  /*showModal=()=>{
     this.setState({
       show:true
     });
@@ -455,7 +471,7 @@ class App extends Component {
     this.setState({
       show:false
     });
-  }
+  }*/
 
   hidePasswordModal=()=>{
     this.setState({askForPassword: false});
@@ -494,23 +510,27 @@ class App extends Component {
     <ErrorModal 
       showError={this.state.showError} 
       hideError={this.hideError}/>
+    <Container>
     {this.state.hasAccount&&this.state.gethPasswordEntered?
       <SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
         <div>
-          <SelectField 
-            floatingLabelText="Frequency"
-            onChange={this.onAttributeType}
-          >
-            {selection.map((val, index)=>{
-                return(<MenuItem key={index} value={index} primaryText={val}/>);
-            })}
-          </SelectField>
-          <TextField
-            floatingLabelText="Value"
-            disabled={!this.state.petId}  onChange={this.onAttributeValue}
-          />               
-          <Checkbox disabled={!this.state.petId}  label="Add Encryption" defaultChecked={true} onCheck={this.toggleAdditionalEncryption}/>
-          <RaisedButton disabled={!this.state.petId} onClick={this.onSubmit} label={"Submit New Result (costs {this.state.cost} Ether)"}/>
+          <Row>
+          <SelectAttribute value={this.state.attributeType} onSelect={this.onAttributeType}/>
+          </Row>
+          <Row>
+            <Col xs={12} sm={8}>
+              <TextField
+                floatingLabelText="Value"
+                disabled={!this.state.petId}  onChange={this.onAttributeValue}
+              />
+            </Col>
+            <Col xs={12} sm={4}>         
+              <Checkbox disabled={!this.state.petId}  label="Add Encryption" defaultChecked={true} onCheck={this.toggleAdditionalEncryption}/>
+            </Col>
+          </Row>
+          <Row>
+            <RaisedButton disabled={!this.state.petId} onClick={this.onSubmit} label={<span>Submit New Result (costs {this.state.cost} Ether)</span>}/>
+          </Row>
           <TableColumns success={this.state.successSearch}>
           {this.state.historicalData.map((val, index)=>{
             return(
@@ -522,6 +542,7 @@ class App extends Component {
       </SyncWrap>:
       <GethLogin hasAccount={this.state.hasAccount} onSuccessLogin={this.onGethLogin}/>
     }
+    </Container>
     <div className='whiteSpace'></div>
     <div className='whiteSpace'></div>
     <div className='whiteSpace'></div>

@@ -11,6 +11,7 @@
     "material-ui": "^0.16.7",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
+    "react-pure-grid": "^2.1.1",
     "react-tap-event-plugin": "^2.0.1",
     "try-require": "^1.2.1",
     "uws": "^0.12.0",
@@ -18,7 +19,7 @@
   },
   "scripts": {
     "start": "concurrently --kill-others \"react-scripts start\" \"npm run test-serv\"",
-    "test-serv":"node testWSServer.js",
+    "test-serv": "node testWSServer.js",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
