@@ -222,84 +222,70 @@ const CustomToolBar=({account, moneyInAccount, contractAddress})=>
     <ToolbarTitle text="Account:" />
      {account}
      <ToolbarSeparator />
-      {moneyInAccount==0?"Ether required!  Send the account some Ether to continue":"Balance: {moneyInAccount}" }
+      {moneyInAccount==0?"Ether required!  Send the account some Ether to continue":"Balance: moneyInAccount" }
   </ToolbarGroup>
   <AboutComponent contractAddress={contractAddress}/>
 </Toolbar>
 
+const TableColumns=({success, children})=>
+<Table>
+    <TableHeader>
+      <TableRow>
+        <TableHeaderColumn>TimeStamp</TableHeaderColumn>
+        <TableHeaderColumn>Attribute</TableHeaderColumn>
+        <TableHeaderColumn>Value</TableHeaderColumn>
+      </TableRow>
+    </TableHeader>
+    {success?
+    <TableBody>
+    {children}
+    </TableBody>
+    :null}
+</Table>
 
-const SubmitPassword=({onCreate, onType})=>
+const SubmitPassword=({onCreate, onType, hasSubmitted=false})=>
 <form onSubmit={(e)=>{e.preventDefault();onCreate();}}>
     <TextField floatingLabelText="Password" type="password" onChange={(e)=>{onType(e.target.value);}}/>
-    <FlatButton label="Submit" primary={true} />
+    {hasSubmitted?<CircularProgress size={40}/>:
+    <FlatButton label="Submit" primary={true} />}
 </form>
-class AccountAndLogin extends Component{
+class GethLogin extends Component{
   constructor(props){
     super(props);
     this.state = {
-      finished: false,
-      stepIndex: 0,
-      hasAccount:this.props.hasAccount,
-      hasPassword:false,
+      error:"",
+      waitingResults:false,
       password:""
     };
+    socket.on('passwordError', (event, arg)=>{
+      this.setState({error:arg, waitingResults:false});
+    });
+    socket.on('successLogin', (event, arg)=>{
+      this.setState({
+        waitingResults:false
+      })
+      this.props.onSuccessLogin();
+    });
   }
   
   handleSubmitPassword=()=>{
-    socket.send('password', this.state.password);
     this.setState({
-      hasPassword:true,
-      hasAccount:true
+      waitingResults:true
     })
-    this.handleNext();
+    socket.send('password', this.state.password);
   }
   handleTypePassword=(value)=>{
     this.setState({
       password:value
     });
   }
-  handleNext = () => {
-    this.setState({
-      stepIndex: this.state.stepIndex + 1,
-      finished: this.state.stepIndex >= 1,
-    });
-  };
-  handlePrev = () => {
-    if (this.state.stepIndex > 0) {
-      this.setState({stepIndex: this.state.stepIndex - 1});
-    }
-  };
-  getStepContent(stepIndex) {
-    switch (stepIndex) {
-      case 0:
-        return <div><p>{this.state.hasAccount?"Password to login to account":"Enter a password to generate your account.  Don't forget this password!"}</p>
-        <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword}/></div>;
-      case 1:
-        return <div>Hello</div>;
-      default:
-        return 'You\'re a long way from home sonny jim!';
-    }
-  }
   render() {
    // const {finished, stepIndex} = this.state;
-    const contentStyle = {margin: '0 16px'};
+    //const contentStyle = {margin: '0 16px'};
 
     return (
-      <div style={{width: '100%', maxWidth: 700, margin: 'auto'}}>
-        <Stepper activeStep={this.state.stepIndex}>
-          <Step>
-            <StepLabel>{this.state.hasAccount?"Login":"Create Account"}</StepLabel>
-            
-          </Step>
-          <Step>
-            <StepLabel>Enjoy SkyPet!</StepLabel>
-          </Step>
-        </Stepper>
-        <div style={contentStyle}>
-          {this.getStepContent(this.state.stepIndex)}
-          
-        </div>
-      </div>
+      <div><p>{this.props.hasAccount?"Password to login to account":"Enter a password to generate your account.  Don't forget this password!"}</p>
+        <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword} hasSubmitted={this.state.waitingResults}/></div>
     );
   }
 }
@@ -308,8 +294,9 @@ class AccountAndLogin extends Component{
 const MyProgressBar=({value})=>{
   return value>0?<CircularProgress  key="firstCircle" size={80} thickness={5} mode="determinate"  value={value*100}/>:<CircularProgress key="secondCircle" size={80} thickness={5} />
 }
-
-
+const SyncWrap=({isSyncing, children, progress})=>{
+  return isSyncing?<MyProgressBar value={progress}/>:{children}
+}
 class App extends Component {
   constructor(props){
     super(props); 
@@ -325,7 +312,7 @@ class App extends Component {
       successSearch:false,
       cost:0,
       moneyInAccount:0,
-      show:false,
+      //show:false,
       showError:"",
       addedEncryption:true,//for entering data
       historicalData:[],
@@ -485,26 +472,31 @@ class App extends Component {
   createAccount=(event)=>{
     console.log(event);
   }
+  onGethLogin=()=>{
+    this.setState({
+      hasAccount:true,
+      gethPasswordEntered:true
+    })
+  }
   render(){
-    //console.log(this.state.currentProgress>0?"determinate":"indeterminate")
-   // const showDeterminate=this.state.currentProgress>0
       return(
-        <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
+<MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
+  <div>
+    <CustomToolBar 
+      account={this.state.account} 
+      moneyInAccount={this.state.moneyInAccount}
+      contractAddress={this.state.contractAddress}/>
+    <PasswordModal 
+      onPassword={this.onPassword} 
+      setPassword={this.setPassword}  
+      hidePasswordModal={this.hidePasswordModal} 
+      askForPassword={this.state.askForPassword}/>
+    <ErrorModal 
+      showError={this.state.showError} 
+      hideError={this.hideError}/>
+    {this.state.hasAccount&&this.state.gethPasswordEntered?
+      <SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
         <div>
-          <CustomToolBar 
-            account={this.state.account} 
-            moneyInAccount={this.state.moneyInAccount}
-            contractAddress={this.state.contractAddress}/>
-          <PasswordModal 
-            onPassword={this.onPassword} 
-            setPassword={this.setPassword}  
-            hidePasswordModal={this.hidePasswordModal} 
-            askForPassword={this.state.askForPassword}/>
-          <ErrorModal 
-            showError={this.state.showError} 
-            hideError={this.hideError}/>
-          {this.state.isSyncing?<MyProgressBar value={this.state.currentProgress}/>:
-          <div>
           <SelectField 
             floatingLabelText="Frequency"
             onChange={this.onAttributeType}
@@ -517,41 +509,25 @@ class App extends Component {
             floatingLabelText="Value"
             disabled={!this.state.petId}  onChange={this.onAttributeValue}
           />               
-                     
-                
-    
-        <Checkbox disabled={!this.state.petId}  label="Add Encryption" defaultChecked={true} onCheck={this.toggleAdditionalEncryption}/>
-        <RaisedButton disabled={!this.state.petId} onClick={()=>{this.onSubmit();}} label={"Submit New Result (costs {this.state.cost} Ether)"}/>
-                      
-        <Table>
-            
-            <TableHeader>
-              <TableRow>
-                <TableHeaderColumn>TimeStamp</TableHeaderColumn>
-                <TableHeaderColumn>Attribute</TableHeaderColumn>
-                <TableHeaderColumn>Value</TableHeaderColumn>
-              </TableRow>
-            </TableHeader>
-            {this.state.successSearch?
-            <TableBody>
-                {this.state.historicalData.map((val, index)=>{
-                    return(
-                        <TblRow key={index} timestamp={val.timestamp.toString()} attributeText={val.attributeText}  label={selection[val.attributeType]||"Unknown"} isEncrypted={val.isEncrypted}/>
-                    );
-                })}
-
-            </TableBody>
-            :null}
-        </Table>
-          </div>
-          }
-          
-          <div className='whiteSpace'></div>
-          <div className='whiteSpace'></div>
-          <div className='whiteSpace'></div>
-          <div className='whiteSpace'></div>
-          </div>
-          </MuiThemeProvider>
+          <Checkbox disabled={!this.state.petId}  label="Add Encryption" defaultChecked={true} onCheck={this.toggleAdditionalEncryption}/>
+          <RaisedButton disabled={!this.state.petId} onClick={this.onSubmit} label={"Submit New Result (costs {this.state.cost} Ether)"}/>
+          <TableColumns success={this.state.successSearch}>
+          {this.state.historicalData.map((val, index)=>{
+            return(
+                <TblRow key={index} timestamp={val.timestamp.toString()} attributeText={val.attributeText}  label={selection[val.attributeType]||"Unknown"} isEncrypted={val.isEncrypted}/>
+            );
+          })}
+          </TableColumns>              
+        </div>
+      </SyncWrap>:
+      <GethLogin hasAccount={this.state.hasAccount} onSuccessLogin={this.onGethLogin}/>
+    }
+    <div className='whiteSpace'></div>
+    <div className='whiteSpace'></div>
+    <div className='whiteSpace'></div>
+    <div className='whiteSpace'></div>
+  </div>
+</MuiThemeProvider>
       );
   }
 }
