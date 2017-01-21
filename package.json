@@ -11,7 +11,7 @@
     "material-ui": "^0.16.7",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
-    "react-pure-grid": "^2.1.1",
+    "react-responsive-grid": "^0.3.4",
     "react-tap-event-plugin": "^2.0.1",
     "try-require": "^1.2.1",
     "uws": "^0.12.0",

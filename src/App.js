@@ -1,6 +1,7 @@
 import React,  {  Component } from 'react';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import {Container, Row, Col} from 'react-pure-grid';
+//import {Container, Row, Col} from 'react-pure-grid';
+import {Container, Grid, Breakpoint, Span} from 'react-responsive-grid'
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
@@ -510,27 +511,25 @@ class App extends Component {
     <ErrorModal 
       showError={this.state.showError} 
       hideError={this.hideError}/>
-    <Container>
+    <Grid columns={12}>
     {this.state.hasAccount&&this.state.gethPasswordEntered?
       <SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
         <div>
-          <Row>
+          <Span columns={12}>
           <SelectAttribute value={this.state.attributeType} onSelect={this.onAttributeType}/>
-          </Row>
-          <Row>
-            <Col xs={12} sm={8}>
-              <TextField
-                floatingLabelText="Value"
-                disabled={!this.state.petId}  onChange={this.onAttributeValue}
-              />
-            </Col>
-            <Col xs={12} sm={4}>         
+          </Span>
+          <Span columns={8}>
+            <TextField
+              floatingLabelText="Value"
+              disabled={!this.state.petId}  onChange={this.onAttributeValue}
+            />
+          </Span>
+          <Span columns={4}>      
               <Checkbox disabled={!this.state.petId}  label="Add Encryption" defaultChecked={true} onCheck={this.toggleAdditionalEncryption}/>
-            </Col>
-          </Row>
-          <Row>
+          </Span>
+          <Span columns={12}>
             <RaisedButton disabled={!this.state.petId} onClick={this.onSubmit} label={<span>Submit New Result (costs {this.state.cost} Ether)</span>}/>
-          </Row>
+          </Span>
           <TableColumns success={this.state.successSearch}>
           {this.state.historicalData.map((val, index)=>{
             return(
@@ -542,7 +541,7 @@ class App extends Component {
       </SyncWrap>:
       <GethLogin hasAccount={this.state.hasAccount} onSuccessLogin={this.onGethLogin}/>
     }
-    </Container>
+    </Grid>
     <div className='whiteSpace'></div>
     <div className='whiteSpace'></div>
     <div className='whiteSpace'></div>
