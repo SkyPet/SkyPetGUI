@@ -493,6 +493,9 @@ class App extends Component {
     const mainStyle = {
       margin: 20,
     };
+    console.log(this.state.isSyncing);
+    console.log(this.state.hasAccount);
+    console.log(this.state.gethPasswordEntered);
       return(
 <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
   <div>
