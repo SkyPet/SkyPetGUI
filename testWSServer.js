@@ -21,10 +21,10 @@ wss.on('connection', function(ws) {
             //console.log(msg)
             var progress=0;
             var doProgress=setInterval(()=>{
-                progress+=.1;
-                if(progress>1){
+                progress+=10;
+                if(progress>100){
                     clearInterval(doProgress);
-                    return  ws.send(makeObj('sync', {currentProgress:1, isSyncing:false}));
+                    return  ws.send(makeObj('sync', {currentProgress:100, isSyncing:false}));
                 }
                 ws.send(makeObj('sync', {currentProgress:progress, isSyncing:true}));
             }, 1000);

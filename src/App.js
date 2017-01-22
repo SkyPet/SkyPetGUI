@@ -1,17 +1,13 @@
 import React,  {  Component } from 'react';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import Flexbox from 'flexbox-react';
-//import {Container, Row, Col} from 'react-pure-grid';
-//import {Container, Grid, Breakpoint, Span} from 'react-responsive-grid'
-//const {Grid, Row, Col} = require('react-flexbox-grid');
+
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
 import CryptoJS from "crypto-js";
-var tryRequire = require('try-require');
-var socket = tryRequire('electron');
-if(!socket){
-//else if(process.env.NODE_ENV === 'development'){
+
+if(!process.env.REACT_APP_ELECTRON){
   var mySocket=new WebSocket("ws://localhost:4000", "protocolOne"); 
   var isOpen=false;
   var holdMessages=[];
@@ -22,7 +18,7 @@ if(!socket){
     })
     holdMessages="";
   }
-  socket={
+  window.socket={
     definedKeys:{},
     send:(key, value)=>{
       var obj={};
@@ -38,18 +34,19 @@ if(!socket){
       
     },
     on:(key, cb)=>{
-      socket.definedKeys[key]=cb;
+      window.socket.definedKeys[key]=cb;
     }
 
   }
   mySocket.onmessage=(event)=>{
     const data=JSON.parse(event.data);
     const key=Object.keys(data)[0];
-    if(socket.definedKeys[key]){
-      socket.definedKeys[key](null, data[key]);
+    if(window.socket.definedKeys[key]){
+      window.socket.definedKeys[key](null, data[key]);
     }
   }
 }
+
 import Dialog from 'material-ui/Dialog';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
@@ -278,13 +275,15 @@ class GethLogin extends Component{
       waitingResults:false,
       password:""
     };
-    socket.on('passwordError', (event, arg)=>{
+    window.socket.on('passwordError', (event, arg)=>{
+      console.log(arg);
       this.setState({error:arg, waitingResults:false}, 
         setTimeout(()=>{
           this.setState({
             error:""
         })}, 3000)  )});
-    socket.on('successLogin', (event, arg)=>{
+    window.socket.on('successLogin', (event, arg)=>{
+      console.log(arg);
       this.setState({
         waitingResults:false
       })
@@ -296,7 +295,7 @@ class GethLogin extends Component{
     this.setState({
       waitingResults:true
     })
-    socket.send('password', this.state.password);
+    window.socket.send('password', this.state.password);
   }
   handleTypePassword=(event, value)=>{
     this.setState({
@@ -333,7 +332,7 @@ const SelectAttribute=({value, onSelect})=>
 </SelectField>
 
 const MyProgressBar=({value})=>{
-  return value>0?<div style={centerComponent}><CircularProgress  key="firstCircle" size={80} thickness={5} mode="determinate"  value={value*100}/></div>:<div style={centerComponent}><CircularProgress  key="secondCircle" size={80} thickness={5} /></div>
+  return value>0?<div style={centerComponent}><CircularProgress  key="firstCircle" size={80} thickness={5} mode="determinate"  value={value}/></div>:<div style={centerComponent}><CircularProgress  key="secondCircle" size={80} thickness={5} /></div>
 }
 const SyncWrap=({isSyncing, children, progress})=>{
   return isSyncing?<MyProgressBar value={progress}/>:children
@@ -342,95 +341,79 @@ class App extends Component {
   constructor(props){
     super(props); 
     this.state={
-      //name:"",
-      //owner:"",
       contractAddress:"",
-      //showNew:false,
       account:"",
       isSyncing:true,
-      //accountCreated:false,
       gethPasswordEntered:false,
       successSearch:false,
       cost:0,
       showEntry:false,
       moneyInAccount:0,
-      //show:false,
       showError:"",
       addedEncryption:true,//for entering data
       historicalData:[],
-      //askForPassword:false,
       currentProgress:0,
       hasAccount:false,
       password:"",//for entereing data
       attributeValue:"", //for entering data
       attributeType:0 //for entering ata
     };
-    socket.send('startEthereum', 'ping')
-    socket.on('accounts', (event, arg) => {
+    window.socket.send('startEthereum', 'ping')
+    window.socket.on('accounts', (event, arg) => {
       console.log(arg);
       this.setState({
         account:arg
       });
     })
-    socket.on('hasAccount', (event, arg) => {
+    window.socket.on('hasAccount', (event, arg) => {
       console.log(arg);
       this.setState({
         hasAccount:true
       });
     })
-    socket.on('sync', (event, arg) => {
+    window.socket.on('sync', (event, arg) => {
       console.log(arg);
       this.setState(arg);
     })
-    socket.on('cost', (event, arg) => {
+    window.socket.on('cost', (event, arg) => {
       console.log(arg);
       this.setState({
         cost:arg
       });
     })
-    socket.on('petId', (event, arg) => {
+    window.socket.on('petId', (event, arg) => {
       console.log(arg);
       this.setState({
         petId:arg
       });
     })
-    socket.on('contractAddress', (event, arg) => {
+    window.socket.on('contractAddress', (event, arg) => {
       this.setState({
         contractAddress:arg
       });
     })
-    socket.on('moneyInAccount', (event, arg) => {
+    window.socket.on('moneyInAccount', (event, arg) => {
       console.log(arg);
       this.setState({
         moneyInAccount:arg
       });
     })
-    socket.on('error', (event, arg) => {
+    window.socket.on('error', (event, arg) => {
       console.log(arg);
       this.setState({
         showError:arg
       });
     })
-    socket.on('retrievedData', (event, arg) => {
+    window.socket.on('retrievedData', (event, arg) => {
       console.log(arg);
       this.retrievedData(arg);
 
     })
   }
   retrievedData=(arg)=>{
-    /*const owner=arg.find((val)=>{
-      console.log(val);
-      return selection[val.attributeType]==='Owner'
-    });
-    const name=arg.find((val)=>{
-      return selection[val.attributeType]==='Name'
-    });*/
     this.setState({
       successSearch:arg[0]?true:false,
-      //showNew:arg[0]?false:true,
       historicalData:arg,
-      //name:name?name.attributeText:"",
-      //owner:owner?owner.attributeText:""
     });
   }
   onAttributeValue=(event, value)=>{
@@ -468,7 +451,7 @@ class App extends Component {
   }
   submitAttribute=(formattedAttribute, attVal)=>{
     if(this.state.moneyInAccount>this.state.cost){
-      socket.send('addAttribute', formattedAttribute)
+      window.socket.send('addAttribute', formattedAttribute)
       this.setState({
         historicalData:this.state.historicalData.concat([{timestamp:new Date(), attributeText:attVal, attributeType:this.state.attributeType, isEncrypted:this.state.addedEncryption}]),
         showEntry:false
