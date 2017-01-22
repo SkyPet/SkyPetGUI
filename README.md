@@ -1,6 +1,8 @@
 #Skypet HTML
 
-This is the UI for all SkyPet Apps.  It has conditional compilation for modules depending on what needs to be compiled for.  
+This is the UI for all SkyPet Apps.  It has conditional compilation for modules depending on what needs to be compiled for.  For DEVELOPMENT ONLY!.  Run with `npm start`.
+
+To integrate into production, use an external CLI.  See, for example, the implementation in SkyPetDesktop.
 
 
 
