@@ -8,7 +8,6 @@ import Flexbox from 'flexbox-react';
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
 import CryptoJS from "crypto-js";
-//console.log(process.env);
 var tryRequire = require('try-require');
 var socket = tryRequire('electron');
 if(!socket){
@@ -18,7 +17,6 @@ if(!socket){
   var holdMessages=[];
   mySocket.onopen=(event)=>{
     isOpen=true;
-    console.log(holdMessages);
     holdMessages.map((val, index)=>{
       mySocket.send(val);
     })
@@ -34,6 +32,7 @@ if(!socket){
        // mySocket.send(JSON.stringify(obj));
       }
       else{
+        console.log(obj);
         mySocket.send(JSON.stringify(obj));
       }
       
@@ -47,7 +46,6 @@ if(!socket){
     const data=JSON.parse(event.data);
     const key=Object.keys(data)[0];
     if(socket.definedKeys[key]){
-      console.log("got here");
       socket.definedKeys[key](null, data[key]);
     }
   }
@@ -71,7 +69,7 @@ import {
   Stepper,
   StepLabel,
 } from 'material-ui/Stepper';
-const centerComponent={display: 'flex', justifyContent: 'center'};
+//const centerComponent={display: 'flex', justifyContent: 'center'};
 const blockChainView='https://testnet.etherscan.io/address/';
 const selection=[
     "Temperament",
@@ -79,7 +77,7 @@ const selection=[
     "Owner", //this can be encrypted
     "Address" //this can be encrypted
 ];
-
+const centerComponent={display: 'flex', /*alignItems: 'center',*/ justifyContent: 'center'};
 const formatAttribute=(attributeType, attributeValue)=>{
   var obj={};
   obj[attributeType]=attributeValue;
@@ -123,7 +121,7 @@ class TblRow extends Component {/*=({attributeText, isEncrypted, onDecrypt, time
       setTimeout(()=>{this.setState({wrongPassword:false})}, 3000)
     })
   }
-  setPassword=(value)=>{
+  setPassword=(event, value)=>{
     this.setState({
       password:value
     })
@@ -139,8 +137,8 @@ class TblRow extends Component {/*=({attributeText, isEncrypted, onDecrypt, time
         <PasswordModal onPassword={this.onPasswordSubmit} setPassword={this.setPassword} hidePasswordModal={this.hideModal} askForPassword={this.state.showPasswordModal}/>          
         <TableRowColumn>{this.props.timestamp}</TableRowColumn>
         <TableRowColumn>{this.props.label}</TableRowColumn>
-        <TableRowColumn>{this.state.isEncrypted?this.state.wrongPassword?<FlatButton label="Wrong Password" onClick={this.onDecrypt}/>:
-            <FlatButton disabled={!this.state.isEncrypted} label="Decrypt" onClick={this.onDecrypt}/>:
+        <TableRowColumn>{this.state.isEncrypted?this.state.wrongPassword?<RaisedButton label="Wrong Password" onClick={this.onDecrypt}/>:
+            <RaisedButton disabled={!this.state.isEncrypted} label="Decrypt" onClick={this.onDecrypt}/>:
           this.state.attributeText}
         </TableRowColumn>
     </TableRow>
@@ -163,7 +161,6 @@ class AboutComponent extends Component {
     })
   }
   render(){
-    //console.log(this.props.contractAddress)
     return(
       <div>
         <RaisedButton label="Learn More" primary={true} onClick={this.onAbout}/>
@@ -209,27 +206,13 @@ const ErrorModal=({showError, hideError})=>
 const PasswordModal=({onPassword, setPassword, hidePasswordModal, askForPassword})=>
 <Dialog
   title="Enter Password"
-  modal={true}
   open={askForPassword}
   onRequestClose={hidePasswordModal}
 >
   <SubmitPassword onCreate={onPassword} onType={setPassword}/>
-  <RaisedButton label="Cancel" onClick={hidePasswordModal}/>
 </Dialog>
 
-const CustomToolBar=({account, moneyInAccount, contractAddress})=>
- <Toolbar>
-  <ToolbarGroup firstChild={true}>
-   <ToolbarTitle text="SkyPet" />
-  </ToolbarGroup>
-  <ToolbarGroup>
-    <ToolbarTitle text="Account:" />
-     {account}
-     <ToolbarSeparator />
-      {moneyInAccount==0?<span>Ether required!  Send the account some Ether to continue</span>:<span>Balance: {moneyInAccount}</span>}
-  </ToolbarGroup>
-  <AboutComponent contractAddress={contractAddress}/>
-</Toolbar>
+
 
 const TableColumns=({success, children})=>
 <Table>
@@ -249,38 +232,43 @@ const TableColumns=({success, children})=>
 
 const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
 <form onSubmit={(e)=>{e.preventDefault();onCreate();}}>
-    <TextField floatingLabelText="Password" type="password" onChange={(e)=>{onType(e.target.value);}}/>
-    {hasSubmitted?<CircularProgress size={40}/>:error?<FlatButton label={error} />:
-    <FlatButton label="Submit"/>}
+    <TextField autoFocus floatingLabelText="Password" type="password" onChange={onType}/>
+    {hasSubmitted?<CircularProgress size={40}/>:error?<RaisedButton primary={true} label={error} />:
+    <RaisedButton primary={true} label="Submit"/>}
 </form>
 
 
 
 
 const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, formValidation})=>
-<div>
-<SelectAttribute value={selectValue} onSelect={onSelect}/>
-<br/>
-<TextField
-  floatingLabelText="Value"
-  disabled={shouldDisable}  onChange={onText}
-/>
-<br/>
-<Checkbox 
-  disabled={shouldDisable}  
-  label="Add Encryption" 
-  defaultChecked={true} 
-  onCheck={onCheck}/>
-<br/>
-{isChecked?
-<TextField floatingLabelText="Password" type="password" onChange={onPassword}/>:null}
-<br/>
-<RaisedButton 
-  disabled={formValidation()} 
-  onClick={onSubmit} 
-  label={<span>Submit New Result (costs {cost} Ether)</span>}/>
-</div>          
+<form onSubmit={(e)=>{e.preventDefault();formValidation()?onSubmit():"";}}>
+  <SelectAttribute value={selectValue} onSelect={onSelect}/>
+  <br/>
+  <TextField
+    autoFocus
+    fullWidth={true}
+    floatingLabelText="Value"
+    disabled={shouldDisable}  onChange={onText}
+  />
+  <br/>
+  {isChecked?
+  <TextField fullWidth={true} floatingLabelText="Password" type="password" onChange={onPassword}/>:null}
+  <br/>
+  <Checkbox 
+    disabled={shouldDisable}  
+    label="Add Encryption" 
+    defaultChecked={true} 
+    onCheck={onCheck}/>
+  <br/>
 
+  <RaisedButton 
+    fullWidth={true}
+    disabled={formValidation()} 
+    type="submit"
+    primary={true}
+   label={`Submit New Result (costs ${cost} Ether)`}
+   onClick={onSubmit}/>
+</form>          
 
 class GethLogin extends Component{
   constructor(props){
@@ -310,20 +298,23 @@ class GethLogin extends Component{
     })
     socket.send('password', this.state.password);
   }
-  handleTypePassword=(value)=>{
+  handleTypePassword=(event, value)=>{
     this.setState({
       password:value
     });
   }
+
   render() {
    // const {finished, stepIndex} = this.state;
     //const contentStyle = {margin: '0 16px'};
 
     return (
-      <Flexbox flexDirection="column">
-        <p>{this.props.hasAccount?"Password to login to account":"Enter a password to generate your account.  Don't forget this password!"}</p>
-        <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword} hasSubmitted={this.state.waitingResults} error={this.state.error}/>
-      </Flexbox>
+      <div style={centerComponent}>
+        <div>
+          {this.props.hasAccount?<span>Password to login to account</span>:<span>Enter a password to generate your account.<br/>Don't forget this password!</span>}
+          <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword} hasSubmitted={this.state.waitingResults} error={this.state.error} />
+        </div>
+      </div>
     );
   }
 }
@@ -334,6 +325,7 @@ const SelectAttribute=({value, onSelect})=>
   onChange={onSelect}
   value={value}
   defaultValue={0}
+  fullWidth={true}
 >
   {selection.map((val, index)=>{
       return(<MenuItem key={index} value={index} primaryText={val}/>);
@@ -341,7 +333,7 @@ const SelectAttribute=({value, onSelect})=>
 </SelectField>
 
 const MyProgressBar=({value})=>{
-  return value>0?<CircularProgress key="firstCircle" size={80} thickness={5} mode="determinate"  value={value*100}/>:<CircularProgress key="secondCircle" size={80} thickness={5} />
+  return value>0?<div style={centerComponent}><CircularProgress  key="firstCircle" size={80} thickness={5} mode="determinate"  value={value*100}/></div>:<div style={centerComponent}><CircularProgress  key="secondCircle" size={80} thickness={5} /></div>
 }
 const SyncWrap=({isSyncing, children, progress})=>{
   return isSyncing?<MyProgressBar value={progress}/>:children
@@ -350,13 +342,13 @@ class App extends Component {
   constructor(props){
     super(props); 
     this.state={
-      name:"",
-      owner:"",
+      //name:"",
+      //owner:"",
       contractAddress:"",
-      showNew:false,
+      //showNew:false,
       account:"",
       isSyncing:true,
-      accountCreated:false,
+      //accountCreated:false,
       gethPasswordEntered:false,
       successSearch:false,
       cost:0,
@@ -366,7 +358,7 @@ class App extends Component {
       showError:"",
       addedEncryption:true,//for entering data
       historicalData:[],
-      askForPassword:false,
+      //askForPassword:false,
       currentProgress:0,
       hasAccount:false,
       password:"",//for entereing data
@@ -426,24 +418,24 @@ class App extends Component {
     })
   }
   retrievedData=(arg)=>{
-    const owner=arg.find((val)=>{
+    /*const owner=arg.find((val)=>{
       console.log(val);
       return selection[val.attributeType]==='Owner'
     });
     const name=arg.find((val)=>{
       return selection[val.attributeType]==='Name'
-    });
+    });*/
     this.setState({
       successSearch:arg[0]?true:false,
-      showNew:arg[0]?false:true,
+      //showNew:arg[0]?false:true,
       historicalData:arg,
-      name:name?name.attributeText:"",
-      owner:owner?owner.attributeText:""
+      //name:name?name.attributeText:"",
+      //owner:owner?owner.attributeText:""
     });
   }
-  onAttributeValue=(event)=>{
+  onAttributeValue=(event, value)=>{
       this.setState({
-          attributeValue:event.target.value
+          attributeValue:value
       });      
   }
   onAttributeType=(event, label, value)=>{
@@ -456,20 +448,14 @@ class App extends Component {
           addedEncryption:!this.state.addedEncryption
       });
   }
-  setPassword=(value)=>{
+  setPassword=(event, value)=>{
       this.setState({
           password:value
       });
   }
   onPassword=()=>{
     const attVal=Object.assign(formatAttribute(this.state.attributeType,CryptoJS.AES.encrypt(this.state.attributeValue, this.state.password).toString()), {addedEncryption:true});
-    console.log(attVal);
-    console.log(this.state.attributeValue);
-    this.submitAttribute(attVal, attVal.attributeType);
-    /*this.setState({
-      askForPassword:false,
-      password:""
-    });*/
+    this.submitAttribute(attVal, attVal[this.state.attributeType]);
   }
   onSubmit=()=>{
     var obj={};
@@ -481,14 +467,11 @@ class App extends Component {
     }
   }
   submitAttribute=(formattedAttribute, attVal)=>{
-    console.log(this.state.moneyInAccount);
-    console.log(this.state.cost);
-    console.log(attVal);
-    console.log(formattedAttribute);
     if(this.state.moneyInAccount>this.state.cost){
       socket.send('addAttribute', formattedAttribute)
       this.setState({
-        historicalData:this.state.historicalData.concat([{timestamp:new Date(), attributeText:attVal, attributeType:this.state.attributeType, isEncrypted:this.state.addedEncryption}])
+        historicalData:this.state.historicalData.concat([{timestamp:new Date(), attributeText:attVal, attributeType:this.state.attributeType, isEncrypted:this.state.addedEncryption}]),
+        showEntry:false
       },()=>{
         this.retrievedData(this.state.historicalData);
       });
@@ -509,21 +492,10 @@ class App extends Component {
       showEntry:false
     });
   }
-
-  hidePasswordModal=()=>{
-    this.setState({askForPassword: false});
-  }
   hideError=()=>{
     this.setState({
       showError:""
     });
-  }
-  submitPassword=(event)=>{
-    console.log(event);
-    
-  }
-  createAccount=(event)=>{
-    console.log(event);
   }
   onGethLogin=()=>{
     this.setState({
@@ -535,13 +507,8 @@ class App extends Component {
     return !(this.state.petId&&(this.state.password||!this.state.addedEncryption)&&this.state.attributeValue);
   }
   render(){
-
     const mainStyle = {
-      //height: 100,
-      //width: 100,
       margin: 20,
-      //textAlign: 'center',
-      display: 'inline-block',
     };
       return(
 <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
@@ -560,7 +527,7 @@ class App extends Component {
     >
       <EntryForm 
         selectValue={this.state.attributeType}
-        onSelect={this.onAttribute}
+        onSelect={this.onAttributeType}
         onCheck={this.toggleAdditionalEncryption}
         cost={this.state.cost}
         onText={this.onAttributeValue}
@@ -570,14 +537,12 @@ class App extends Component {
         isChecked={this.state.addedEncryption}
         formValidation={this.entryValidation}
       />
-
     </Dialog>
-    
     <div style={mainStyle}>
     {this.state.hasAccount&&this.state.gethPasswordEntered?
       <SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
         <div>
-          <RaisedButton label="Add Entry" onClick={this.showEntryModal}/>
+          <RaisedButton primary={true} label="Add Entry" onClick={this.showEntryModal}/>
           <TableColumns success={this.state.successSearch}>
           {this.state.historicalData.map((val, index)=>{
             return(
@@ -600,5 +565,16 @@ class App extends Component {
       );
   }
 }
-
+const CustomToolBar=({account, moneyInAccount, contractAddress})=>
+ <Toolbar>
+  <ToolbarGroup firstChild={true}>
+   <ToolbarTitle text="SkyPet" />
+    {`Account: ${account}`}
+  <ToolbarSeparator/>
+  {account?moneyInAccount==0?"Ether required!  Send the account some Ether to continue.":`Balance: ${moneyInAccount}`:""}
+  </ToolbarGroup>
+  <ToolbarGroup>
+    <AboutComponent contractAddress={contractAddress}/>
+  </ToolbarGroup>
+</Toolbar>
 export default App;
