@@ -526,19 +526,19 @@ class App extends Component {
     </Dialog>
     <div style={mainStyle}>
     {this.state.hasAccount&&this.state.gethPasswordEntered?
-      <SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
-        <div>
-          <RaisedButton primary={true} label="Add Entry" onClick={this.showEntryModal}/>
-          <TableColumns success={this.state.successSearch}>
-          {this.state.historicalData.map((val, index)=>{
-            return(
-                <TblRow key={index} timestamp={val.timestamp.toString()} attributeText={val.attributeText}  label={selection[val.attributeType]||"Unknown"} isEncrypted={val.isEncrypted}/>
-            );
-          })}
-          </TableColumns>              
-        </div>
-      </SyncWrap>:
-      <GethLogin hasAccount={this.state.hasAccount} onSuccessLogin={this.onGethLogin}/>
+      <div>
+        <RaisedButton primary={true} label="Add Entry" onClick={this.showEntryModal}/>
+        <TableColumns success={this.state.successSearch}>
+        {this.state.historicalData.map((val, index)=>{
+          return(
+              <TblRow key={index} timestamp={val.timestamp.toString()} attributeText={val.attributeText}  label={selection[val.attributeType]||"Unknown"} isEncrypted={val.isEncrypted}/>
+          );
+        })}
+        </TableColumns>              
+      </div>:<SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
+        <GethLogin hasAccount={this.state.hasAccount} onSuccessLogin={this.onGethLogin}/>
+      </SyncWrap>
+     
     }
     </div>
     
