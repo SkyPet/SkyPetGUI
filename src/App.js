@@ -278,10 +278,11 @@ class GethLogin extends Component{
     window.socket.on('passwordError', (event, arg)=>{
       console.log(arg);
       this.setState({error:arg, waitingResults:false}, 
-        setTimeout(()=>{
+        ()=>{
+          setTimeout(()=>{
           this.setState({
             error:""
-        })}, 3000)  )});
+        })}, 3000)}  )});
     window.socket.on('successLogin', (event, arg)=>{
       console.log(arg);
       this.setState({
