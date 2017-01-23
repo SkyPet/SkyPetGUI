@@ -75,6 +75,7 @@ const selection=[
     "Address" //this can be encrypted
 ];
 const centerComponent={display: 'flex', /*alignItems: 'center',*/ justifyContent: 'center'};
+const msToWait=3000;
 const formatAttribute=(attributeType, attributeValue)=>{
   var obj={};
   obj[attributeType]=attributeValue;
@@ -115,7 +116,7 @@ class TblRow extends Component {/*=({attributeText, isEncrypted, onDecrypt, time
       isEncrypted:decryptedValue?false:true,
       showPasswordModal:false
     }, ()=>{
-      setTimeout(()=>{this.setState({wrongPassword:false})}, 3000)
+      setTimeout(()=>{this.setState({wrongPassword:false})}, msToWait)
     })
   }
   setPassword=(event, value)=>{
@@ -282,7 +283,7 @@ class GethLogin extends Component{
           setTimeout(()=>{
           this.setState({
             error:""
-        })}, 3000)}  )});
+        })}, msToWait)}  )});
     window.socket.on('successLogin', (event, arg)=>{
       console.log(arg);
       this.setState({
