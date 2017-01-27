@@ -34,9 +34,9 @@ wss.on('connection', function(ws) {
                 return ws.send(makeObj('passwordError', "Wrong password"));
             }
             const Ids=getIds();
-            ws.send(makeObj('successLogin', 'p'))
+            ws.send(makeObj('successLogin', 'MyTestAccount'))
             ws.send(makeObj('petId', Ids.hashId));
-            ws.send(makeObj('accounts', "MyTestAccount"));
+            ws.send(makeObj('account', "MyTestAccount"));
             ws.send(makeObj('constractAddress', "MyTestContractAddress"));    
             ws.send(makeObj('retrievedData', [{timestamp:new Date(), attributeText:"Hello World", isEncrypted:false, attributeType:"0"}]))
             ws.send(makeObj('moneyInAccount',1000));

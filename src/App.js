@@ -250,7 +250,7 @@ const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, o
   />
   <br/>
   {isChecked?
-  <TextField fullWidth={true} floatingLabelText="Password" type="password" onChange={onPassword}/>:null}
+  <TextField fullWidth={true} floatingLabelText="Password for additional encryption" type="password" onChange={onPassword}/>:null}
   <br/>
   <Checkbox 
     disabled={shouldDisable}  
@@ -289,7 +289,7 @@ class GethLogin extends Component{
       this.setState({
         waitingResults:false
       })
-      this.props.onSuccessLogin();
+      this.props.onSuccessLogin(arg);
     });
   }
   
@@ -306,13 +306,10 @@ class GethLogin extends Component{
   }
 
   render() {
-   // const {finished, stepIndex} = this.state;
-    //const contentStyle = {margin: '0 16px'};
-
     return (
       <div style={centerComponent}>
         <div>
-          {this.props.hasAccount?<span>Password to login to account</span>:<span>Enter a password to generate your account.<br/>Don't forget this password!</span>}
+          <span>{this.props.text}</span>
           <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword} hasSubmitted={this.state.waitingResults} error={this.state.error} />
         </div>
       </div>
@@ -355,24 +352,24 @@ class App extends Component {
       addedEncryption:true,//for entering data
       historicalData:[],
       currentProgress:0,
-      hasAccount:false,
+      //hasAccount:false,
       password:"",//for entereing data
       attributeValue:"", //for entering data
       attributeType:0 //for entering ata
     };
     window.socket.send('startEthereum', 'ping')
-    window.socket.on('accounts', (event, arg) => {
+    window.socket.on('account', (event, arg) => {
       console.log(arg);
       this.setState({
         account:arg
       });
     })
-    window.socket.on('hasAccount', (event, arg) => {
+    /*window.socket.on('hasAccount', (event, arg) => {
       console.log(arg);
       this.setState({
         hasAccount:true
       });
-    })
+    })*/
     window.socket.on('sync', (event, arg) => {
       console.log(arg);
       this.setState(arg);
@@ -482,10 +479,9 @@ class App extends Component {
       showError:""
     });
   }
-  onGethLogin=()=>{
+  onGethLogin=(account)=>{
     this.setState({
-      hasAccount:true,
-      gethPasswordEntered:true
+      account:account
     })
   }
   entryValidation=()=>{
@@ -495,9 +491,6 @@ class App extends Component {
     const mainStyle = {
       margin: 20,
     };
-    console.log(this.state.isSyncing);
-    console.log(this.state.hasAccount);
-    console.log(this.state.gethPasswordEntered);
       return(
 <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
   <div>
@@ -513,6 +506,8 @@ class App extends Component {
       open={this.state.showEntry}
       onRequestClose={this.hideEntryModal}
     >
+
+
       <EntryForm 
         selectValue={this.state.attributeType}
         onSelect={this.onAttributeType}
@@ -527,7 +522,7 @@ class App extends Component {
       />
     </Dialog>
     <div style={mainStyle}>
-    {this.state.hasAccount&&this.state.gethPasswordEntered?
+    {this.state.account?
       <div>
         <RaisedButton primary={true} label="Add Entry" onClick={this.showEntryModal}/>
         <TableColumns success={this.state.successSearch}>
@@ -538,7 +533,7 @@ class App extends Component {
         })}
         </TableColumns>              
       </div>:<SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
-        <GethLogin hasAccount={this.state.hasAccount} onSuccessLogin={this.onGethLogin}/>
+        <GethLogin text="Enter a password to generate your account.  Don't forget this password!" onSuccessLogin={this.onGethLogin}/>
       </SyncWrap>
      
     }
