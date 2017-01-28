@@ -91,7 +91,7 @@ const formatAttribute=(attributeType, attributeValue)=>{
 const parseResults=(result)=>{ 
     //result is an object.  if data is encrypted, MUST have an "addedEncryption" key.
     try{ 
-      console.log(result);
+      //console.log(result);
         const parsedResult=JSON.parse(result);
         return Object.keys(parsedResult).filter((val)=>{
             return val!=='addedEncryption';
@@ -449,7 +449,7 @@ class App extends Component {
       console.log(arg);
       this.retrievedData(arg.map((val, index)=>{
         const parsedResult=CryptoJS.AES.decrypt(val.value, this.state.unHashedId).toString(CryptoJS.enc.Utf8);
-        return Object.assign(parseResults(parsedResult), val.timestamp)
+        return Object.assign(parseResults(parsedResult), {timestamp:val.timestamp})
       }));
 
     })
@@ -536,7 +536,7 @@ class App extends Component {
     });
   }
   entryValidation=()=>{
-    return !(this.state.petId&&(this.state.password||!this.state.addedEncryption)&&this.state.attributeValue);
+    return !(this.state.unHashedId&&(this.state.password||!this.state.addedEncryption)&&this.state.attributeValue);
   }
   render(){
     const mainStyle = {
@@ -579,6 +579,7 @@ class App extends Component {
         <RaisedButton primary={true} label="Add Entry" onClick={this.showEntryModal}/>
         <TableColumns success={this.state.successSearch}>
         {this.state.historicalData.map((val, index)=>{
+          //console.log(val);
           return(
               <TblRow key={index} timestamp={val.timestamp.toString()} attributeText={val.attributeText}  label={selection[val.attributeType]||"Unknown"} isEncrypted={val.isEncrypted}/>
           );
