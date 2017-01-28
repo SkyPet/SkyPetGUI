@@ -409,7 +409,7 @@ class App extends Component {
 
       /**temprorary! */
       const myIds=getIds();
-      window.socket.send('ids', myIds.hashId);
+      window.socket.send('id', myIds.hashId);
       
       /**End temporary */
       console.log(arg);
