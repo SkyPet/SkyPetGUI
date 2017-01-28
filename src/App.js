@@ -1,7 +1,11 @@
 import React,  {  Component } from 'react';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import Flexbox from 'flexbox-react';
 import update from 'immutability-helper';
+import {TblRow, TableColumns} from './SkyPetTable';
+import {EntryForm} from './SkyPetPasswords';
+import {GethLogin} from './SkyPetCreateAccount';
+import {SyncWrap} from './SkyPetProgress';
+import {CustomToolBar} from './SkyPetToolbar';
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
@@ -48,16 +52,8 @@ if(!process.env.REACT_APP_ELECTRON){
 import Dialog from 'material-ui/Dialog';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import lightBaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
-import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
-import TextField from 'material-ui/TextField';
-import Checkbox from 'material-ui/Checkbox';
-import {Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
-import CircularProgress from 'material-ui/CircularProgress';
 
 //const centerComponent={display: 'flex', justifyContent: 'center'};
 const blockChainView='https://testnet.etherscan.io/address/';
@@ -67,7 +63,7 @@ const selection=[
     "Owner", //this can be encrypted
     "Address" //this can be encrypted
 ];
-const centerComponent={display: 'flex', /*alignItems: 'center',*/ justifyContent: 'center'};
+const centerComponent={display: 'flex', justifyContent: 'center'};
 const msToWait=3000;
 /**This is testing only! */
 const getIds=()=>{
@@ -99,265 +95,10 @@ const parseResults=(result)=>{
         return {attributeType:"generic", attributeText:result, isEncrypted:false};
     }
 }
-const decrypt=(password, text)=>{ //attributeText
-    var decrypted="";
-    try{
-      decrypted=CryptoJS.AES.decrypt(text, password).toString(CryptoJS.enc.Utf8);
-    }
-    catch(e){
-      console.log(e);
-    }
-    return decrypted;
-}
-class TblRow extends Component {/*=({attributeText, isEncrypted, onDecrypt, timestamp, label, wrongPassword})=>{*/
-  constructor(props){
-    super(props);
-    this.state={
-      isEncrypted:this.props.isEncrypted,
-      attributeText:this.props.attributeText,
-      wrongPassword:false,
-      password:"",
-      showPasswordModal:false
-    }
-  }
-  componentWillReceiveProps(nextProps){
-    nextProps.isEncrypted!==this.state.isEncrypted||nextProps.attributeText!==this.state.attributeText?this.setState({
-      isEncrypted:nextProps.isEncrypted,
-      attributeText:nextProps.attributeText
-    }):"";
-  }
-  onDecrypt=()=>{
-    this.setState({
-      showPasswordModal:true
-    })
-  }
-  onPasswordSubmit=()=>{
-    const decryptedValue=decrypt(this.state.password, this.state.attributeText);
-    this.setState({
-      password:"",
-      wrongPassword:decryptedValue?false:true,
-      attributeText:decryptedValue,
-      isEncrypted:decryptedValue?false:true,
-      showPasswordModal:false
-    }, ()=>{
-      setTimeout(()=>{this.setState({wrongPassword:false})}, msToWait)
-    })
-  }
-  setPassword=(event, value)=>{
-    this.setState({
-      password:value
-    })
-  }
-  hideModal=()=>{
-    this.setState({
-      showPasswordModal:false
-    })
-  }
-  render(){
-    return(
-      <TableRow>   
-        <PasswordModal onPassword={this.onPasswordSubmit} setPassword={this.setPassword} hidePasswordModal={this.hideModal} askForPassword={this.state.showPasswordModal}/>          
-        <TableRowColumn>{this.props.timestamp}</TableRowColumn>
-        <TableRowColumn>{this.props.label}</TableRowColumn>
-        <TableRowColumn>{this.state.isEncrypted?this.state.wrongPassword?<RaisedButton label="Wrong Password" onClick={this.onDecrypt}/>:
-            <RaisedButton disabled={!this.state.isEncrypted} label="Decrypt" onClick={this.onDecrypt}/>:
-          this.state.attributeText}
-        </TableRowColumn>
-    </TableRow>
-    );
-  }
-}
-
-class AboutComponent extends Component {
-  state={
-    closed:true
-  }
-  onAbout=()=>{
-    this.setState({
-      closed:false
-    })
-  }
-  onAboutClose=()=>{
-    this.setState({
-      closed:true
-    })
-  }
-  render(){
-    return(
-      <div>
-        <RaisedButton label="Learn More" primary={true} onClick={this.onAbout}/>
-        <AboutModal contractAddress={this.props.contractAddress} onClick={this.onAboutClose} hideModal={this.state.closed}/>
-      </div>
-    )
-  }
-  
-}
-const AboutModal=({hideModal, onClick, contractAddress})=>
-<Dialog
-  title="About"
-  actions={<FlatButton
-        label="Ok"
-        primary={true}
-        onClick={onClick}
-      />}
-  modal={false}
-  open={!hideModal}
-  onRequestClose={onClick}
->
-  <h4>How it works</h4>
-      <p>Every pet should have a microchip which uniquely identifies itself.  A scanner can read the microchip and an ID is read.  For example, the ID may be 123.  This ID is then hashed and placed on the Ethereum blockchain.  The unhashed ID serves as a key to encrypt the name and address of the owner: hence the pet itself is needed in order to know who the owner and the address are (they are not public without knowing the ID of the pet).  This is not secure in the same sense that a human medical or banking record is secure; but as addresses are essentially public this is not a major issue.  If the medical records for the pet are not desired to be "public" then they can be encrypted using a key not associated with the microchip (eg, a password provided by the owners). 
-      
-      The contract that governs this is available at {contractAddress} on the blockchain.  See it <a href={blockChainView+contractAddress} target="_blank">here.</a> </p>
-</Dialog>
-
-
-const ErrorModal=({showError, hideError})=>
-      <Dialog
-        title="Error!"
-        actions={<FlatButton
-              label="Ok"
-              primary={true}
-              onClick={hideError}
-            />}
-        modal={false}
-        open={showError?true:false}
-        onRequestClose={hideError}
-      >
-      {showError}
-      </Dialog>
-const PasswordModal=({onPassword, setPassword, hidePasswordModal, askForPassword})=>
-<Dialog
-  title="Enter Password"
-  open={askForPassword}
-  onRequestClose={hidePasswordModal}
->
-  <SubmitPassword onCreate={onPassword} onType={setPassword}/>
-</Dialog>
-
-
-
-const TableColumns=({success, children})=>
-<Table>
-    <TableHeader adjustForCheckbox={false} displaySelectAll={false}>
-      <TableRow>
-        <TableHeaderColumn>TimeStamp</TableHeaderColumn>
-        <TableHeaderColumn>Attribute</TableHeaderColumn>
-        <TableHeaderColumn>Value</TableHeaderColumn>
-      </TableRow>
-    </TableHeader>
-    {success?
-    <TableBody displayRowCheckbox={false}>
-    {children}
-    </TableBody>
-    :null}
-</Table>
-
-const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
-<form onSubmit={(e)=>{e.preventDefault();onCreate();}}>
-    <TextField autoFocus floatingLabelText="Password" type="password" onChange={onType}/>
-    {hasSubmitted?<CircularProgress size={40}/>:error?<RaisedButton primary={true} label={error} />:
-    <RaisedButton primary={true} label="Submit"/>}
-</form>
 
 
 
 
-const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, passwordError, hasSubmitted, formValidation, onGethPassword})=>
-<form onSubmit={(e)=>{e.preventDefault();formValidation()?onSubmit():"";}}>
-  <SelectAttribute value={selectValue} onSelect={onSelect}/>
-  <br/>
-  <TextField
-    autoFocus
-    fullWidth={true}
-    floatingLabelText="Value"
-    disabled={shouldDisable}  onChange={onText}
-  />
-  <br/>
-  <Checkbox 
-    disabled={shouldDisable}  
-    label="Add Encryption" 
-    defaultChecked={true} 
-    onCheck={onCheck}/>
-  <br/>
-  <TextField disabled={shouldDisable} fullWidth={true} floatingLabelText="SkyPet Password" type="password" onChange={onPassword}/>
-  {hasSubmitted?<CircularProgress size={40}/>:
-  <RaisedButton 
-    fullWidth={true}
-    disabled={formValidation()} 
-    type="submit"
-    primary={true}
-   label={passwordError?passwordError:`Submit New Result (costs ${cost} Ether)`}
-   onClick={onSubmit}/>}
-</form>          
-
-class GethLogin extends Component{
-  constructor(props){
-    super(props);
-    this.state = {
-      error:"",
-      waitingResults:false,
-      password:""
-    };
-    window.socket.on('passwordError', (event, arg)=>{
-      this.setState({error:arg, waitingResults:false}, 
-        ()=>{
-          setTimeout(()=>{
-          this.setState({
-            error:""
-        })}, msToWait)}  )});
-    window.socket.on('successLogin', (event, arg)=>{
-      this.setState({
-        waitingResults:false
-      })
-      this.props.onSuccessLogin?this.props.onSuccessLogin(arg):"";
-    });
-  }
-  handleSubmitPassword=()=>{
-    this.setState({
-      waitingResults:true
-    })
-    window.socket.send('password', this.state.password);
-
-  }
-  handleTypePassword=(event, value)=>{
-    this.setState({
-      password:value
-    }, ()=>{
-      this.props.onHandleGeth?this.props.onHandleGeth(value):"";
-    });
-  }
-
-  render() {
-    return (
-      <div style={centerComponent}>
-        <div>
-          <span>{this.props.text}</span>
-          <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword} hasSubmitted={this.state.waitingResults} error={this.state.error} />
-        </div>
-      </div>
-    );
-  }
-}
-
-const SelectAttribute=({value, onSelect})=>
-<SelectField 
-  floatingLabelText="Select Attribute"
-  onChange={onSelect}
-  value={value}
-  defaultValue={0}
-  fullWidth={true}
->
-  {selection.map((val, index)=>{
-      return(<MenuItem key={index} value={index} primaryText={val}/>);
-  })}
-</SelectField>
-
-const MyProgressBar=({value})=>{
-  return value>0?<div style={centerComponent}><CircularProgress  key="firstCircle" size={80} thickness={5} mode="determinate"  value={value}/></div>:<div style={centerComponent}><CircularProgress  key="secondCircle" size={80} thickness={5} /></div>
-}
-const SyncWrap=({isSyncing, children, progress})=>{
-  return isSyncing?<MyProgressBar value={progress}/>:children
-}
 class App extends Component {
   constructor(props){
     super(props); 
@@ -369,7 +110,6 @@ class App extends Component {
       cost:0,
       showEntry:false,
       moneyInAccount:0,
-      showError:"",
       passwordError:"",
       addedEncryption:true,//for entering data
       historicalData:[],
@@ -388,12 +128,6 @@ class App extends Component {
         account:arg
       });
     })
-    /*window.socket.on('hasAccount', (event, arg) => {
-      console.log(arg);
-      this.setState({
-        hasAccount:true
-      });
-    })*/
     window.socket.on('sync', (event, arg) => {
       console.log(arg);
       this.setState(arg);
@@ -487,7 +221,6 @@ class App extends Component {
     this.submitAttribute(attVal, attVal[this.state.attributeType]);
   }
   onSubmit=()=>{
-    var obj={};
     if(this.state.addedEncryption){
       this.onPassword();
     }
@@ -540,18 +273,14 @@ class App extends Component {
     <CustomToolBar 
       account={this.state.account} 
       moneyInAccount={this.state.moneyInAccount}
-      contractAddress={this.state.contractAddress}/>
-   
-    <ErrorModal 
-      showError={this.state.showError} 
-      hideError={this.hideError}/>
+      contractAddress={this.state.contractAddress}
+      blockChainView={blockChainView}/>
     <Dialog
       open={this.state.showEntry}
       onRequestClose={this.hideEntryModal}
     >
-
-
       <EntryForm 
+        selection={selection}
         selectValue={this.state.attributeType}
         onSelect={this.onAttributeType}
         onCheck={this.toggleAdditionalEncryption}
@@ -573,12 +302,12 @@ class App extends Component {
         <TableColumns success={this.state.successSearch}>
         {this.state.historicalData.map((val, index)=>{
           return(
-              <TblRow key={index} timestamp={val.timestamp.toString()} attributeText={val.attributeText}  label={selection[val.attributeType]||"Unknown"} isEncrypted={val.isEncrypted}/>
+              <TblRow msToWait={msToWait} key={index} timestamp={val.timestamp.toString()} attributeText={val.attributeText}  label={selection[val.attributeType]||"Unknown"} isEncrypted={val.isEncrypted}/>
           );
         })}
         </TableColumns>              
-      </div>:<SyncWrap isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
-        <GethLogin text="Enter a password to generate your account.  Don't forget this password!" onSuccessLogin={this.onGethLogin}/>
+      </div>:<SyncWrap centerComponent={centerComponent} isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
+        <GethLogin centerComponent={centerComponent} msToWait={msToWait} text="Enter a password to generate your account.  Don't forget this password!" onSuccessLogin={this.onGethLogin}/>
       </SyncWrap>
      
     }
@@ -593,16 +322,5 @@ class App extends Component {
       );
   }
 }
-const CustomToolBar=({account, moneyInAccount, contractAddress})=>
- <Toolbar>
-  <ToolbarGroup firstChild={true}>
-   <ToolbarTitle text="SkyPet" />
-    {`Account: ${account}`}
-  <ToolbarSeparator/>
-  {account?moneyInAccount==0?"Ether required!  Send the account some Ether to continue.":`Balance: ${moneyInAccount}`:""}
-  </ToolbarGroup>
-  <ToolbarGroup>
-    <AboutComponent contractAddress={contractAddress}/>
-  </ToolbarGroup>
-</Toolbar>
+
 export default App;
