@@ -6,7 +6,7 @@ import Flexbox from 'flexbox-react';
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
 import CryptoJS from "crypto-js";
-const SHA256 = require("crypto-js/sha256");
+//const SHA256 = require("crypto-js/sha256");
 if(!process.env.REACT_APP_ELECTRON){
   var mySocket=new WebSocket("ws://localhost:4000", "protocolOne"); 
   var isOpen=false;
@@ -80,7 +80,7 @@ const msToWait=3000;
 const getIds=()=>{
     return {
         unHashedId:"MyId4",
-        hashId:SHA256("MyId4")
+        hashId:CryptoJS.SHA256("MyId4").toString()
     }
 }
 const formatAttribute=(attributeType, attributeValue)=>{
