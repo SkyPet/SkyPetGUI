@@ -61,11 +61,6 @@ import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 import CircularProgress from 'material-ui/CircularProgress';
 
-import {
-  Step,
-  Stepper,
-  StepLabel,
-} from 'material-ui/Stepper';
 //const centerComponent={display: 'flex', justifyContent: 'center'};
 const blockChainView='https://testnet.etherscan.io/address/';
 const selection=[
@@ -76,13 +71,14 @@ const selection=[
 ];
 const centerComponent={display: 'flex', /*alignItems: 'center',*/ justifyContent: 'center'};
 const msToWait=3000;
-//testing only
+/**This is testing only! */
 const getIds=()=>{
     return {
         unHashedId:"MyId4",
         hashId:"0x"+keccak_256("MyId4")
     }
 }
+/**end testing only! */
 const formatAttribute=(attributeType, attributeValue)=>{
   var obj={};
   obj[attributeType]=attributeValue;
@@ -264,7 +260,7 @@ const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
 
 
 
-const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, formValidation, onGethPassword})=>
+const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, passwordError, hasSubmitted, formValidation, onGethPassword})=>
 <form onSubmit={(e)=>{e.preventDefault();formValidation()?onSubmit():"";}}>
   <SelectAttribute value={selectValue} onSelect={onSelect}/>
   <br/>
@@ -275,24 +271,21 @@ const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, o
     disabled={shouldDisable}  onChange={onText}
   />
   <br/>
-  {isChecked?
-  <TextField fullWidth={true} floatingLabelText="Password for additional encryption" type="password" onChange={onPassword}/>:null}
-  <br/>
   <Checkbox 
     disabled={shouldDisable}  
     label="Add Encryption" 
     defaultChecked={true} 
     onCheck={onCheck}/>
   <br/>
-  
-  <GethLogin onHandleGeth={onGethPassword} text="Password for SkyPet Account"/>
+  <TextField disabled={shouldDisable} fullWidth={true} floatingLabelText="SkyPet Password" type="password" onChange={onPassword}/>
+  {hasSubmitted?<CircularProgress size={40}/>:
   <RaisedButton 
     fullWidth={true}
     disabled={formValidation()} 
     type="submit"
     primary={true}
-   label={`Submit New Result (costs ${cost} Ether)`}
-   onClick={onSubmit}/>
+   label={passwordError?passwordError:`Submit New Result (costs ${cost} Ether)`}
+   onClick={onSubmit}/>}
 </form>          
 
 class GethLogin extends Component{
@@ -372,19 +365,18 @@ class App extends Component {
       contractAddress:"",
       account:"",
       isSyncing:true,
-      //gethPasswordEntered:false,
       successSearch:false,
       cost:0,
       showEntry:false,
       moneyInAccount:0,
       showError:"",
+      passwordError:"",
       addedEncryption:true,//for entering data
       historicalData:[],
       currentProgress:0,
+      hasSubmitted:false,
       unHashedId:"",
       hashedId:"",
-      //hasAccount:false,
-      gethPassword:"",
       password:"",//for entereing data
       attributeValue:"", //for entering data
       attributeType:0 //for entering ata
@@ -431,6 +423,27 @@ class App extends Component {
     window.socket.on('contractAddress', (event, arg) => {
       this.setState({
         contractAddress:arg
+      });
+    })
+    window.socket.on('passwordError', (event, arg) => {
+      console.log(arg);
+      this.setState({
+        passwordError:arg,
+        hasSubmitted:false
+      }, ()=>{
+        setTimeout(()=>{
+          this.setState({
+            passwordError:""
+        })}, msToWait
+        )
+      });
+    })
+    window.socket.on('attributeAdded', (event, arg) => {
+      console.log(arg);
+      this.setState({
+        passwordError:"",
+        hasSubmitted:false,
+        showEntry:false
       });
     })
     window.socket.on('moneyInAccount', (event, arg) => {
@@ -495,14 +508,15 @@ class App extends Component {
   }
   submitAttribute=(formattedAttribute, attVal)=>{
     if(this.state.moneyInAccount>this.state.cost){
-
-      window.socket.send('addAttribute', {message:CryptoJS.AES.encrypt(formattedAttribute, this.state.unHashedId).toString(), hashId:this.state.hashId, password:this.state.gethPassword});
+      window.socket.send('addAttribute', {message:CryptoJS.AES.encrypt(JSON.stringify(formattedAttribute), this.state.unHashedId).toString(), hashId:this.state.hashId, password:this.state.password});
       this.setState({
-        historicalData:this.state.historicalData.concat([{timestamp:new Date(), attributeText:attVal, attributeType:this.state.attributeType, isEncrypted:this.state.addedEncryption}]),
-        showEntry:false
-      },()=>{
+        //historicalData:this.state.historicalData.concat([{timestamp:new Date(), attributeText:attVal, attributeType:this.state.attributeType, isEncrypted:this.state.addedEncryption}]),
+        //showEntry:false,
+        password:"",
+        hasSubmitted:true
+    }/*,()=>{
         this.retrievedData(this.state.historicalData);
-      });
+      }*/);
       
     }
     else{
@@ -530,11 +544,11 @@ class App extends Component {
       account:account
     })
   }
-  onGethPassword=(gethPassword)=>{
+  /*onGethPassword=(gethPassword)=>{
     this.setState({
       gethPassword:gethPassword
     });
-  }
+  }*/
   entryValidation=()=>{
     return !(this.state.unHashedId&&(this.state.password||!this.state.addedEncryption)&&this.state.attributeValue);
   }
@@ -568,9 +582,10 @@ class App extends Component {
         shouldDisable={!this.state.hashId}
         onSubmit={this.onSubmit}
         onPassword={this.setPassword}
+        passwordError={this.state.passwordError}
+        hasSubmitted={this.state.hasSubmitted}
         isChecked={this.state.addedEncryption}
         formValidation={this.entryValidation}
-        onGethPassword={this.onGethPassword}
       />
     </Dialog>
     <div style={mainStyle}>
