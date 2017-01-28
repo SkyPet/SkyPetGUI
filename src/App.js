@@ -6,7 +6,7 @@ import Flexbox from 'flexbox-react';
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
 import CryptoJS from "crypto-js";
-
+const SHA256 = require("crypto-js/sha256");
 if(!process.env.REACT_APP_ELECTRON){
   var mySocket=new WebSocket("ws://localhost:4000", "protocolOne"); 
   var isOpen=false;
@@ -76,10 +76,35 @@ const selection=[
 ];
 const centerComponent={display: 'flex', /*alignItems: 'center',*/ justifyContent: 'center'};
 const msToWait=3000;
+//testing only
+const getIds=()=>{
+    return {
+        unHashedId:"MyId4",
+        hashId:SHA256("MyId4")
+    }
+}
 const formatAttribute=(attributeType, attributeValue)=>{
   var obj={};
   obj[attributeType]=attributeValue;
   return obj;
+}
+const parseResults=(result)=>{ 
+    //result is an object.  if data is encrypted, MUST have an "addedEncryption" key.
+    try{ 
+        const parsedResult=JSON.parse(result);
+        return Object.keys(parsedResult).filter((val)=>{
+            return val!=='addedEncryption';
+        }).reduce((cumulator, key, index)=>{
+            return {
+                attributeText:index>0?cumulator.attributeText+', '+parsedResult[key]:parsedResult[key],
+                attributeType:index>0?cumulator.attributeType+', '+key:key,
+                isEncrypted:parsedResult.addedEncryption?true:false
+            }  
+        }, {attributeType:'', attributeText:'', isEncrypted:false})
+    }catch(e){
+        console.log(e);
+        return {attributeType:"generic", attributeText:result, isEncrypted:false};
+    }
 }
 const decrypt=(password, text)=>{ //attributeText
     var decrypted="";
@@ -238,7 +263,7 @@ const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
 
 
 
-const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, formValidation})=>
+const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, formValidation, onGethPassword})=>
 <form onSubmit={(e)=>{e.preventDefault();formValidation()?onSubmit():"";}}>
   <SelectAttribute value={selectValue} onSelect={onSelect}/>
   <br/>
@@ -258,7 +283,8 @@ const EntryForm=({selectValue, shouldDisable, cost, onSelect, onText, onCheck, o
     defaultChecked={true} 
     onCheck={onCheck}/>
   <br/>
-
+  
+  <GethLogin onHandleGeth={onGethPassword} text="Password for SkyPet Account"/>
   <RaisedButton 
     fullWidth={true}
     disabled={formValidation()} 
@@ -289,19 +315,21 @@ class GethLogin extends Component{
       this.setState({
         waitingResults:false
       })
-      this.props.onSuccessLogin(arg);
+      this.props.onSuccessLogin?this.props.onSuccessLogin(arg):"";
     });
   }
-  
   handleSubmitPassword=()=>{
     this.setState({
       waitingResults:true
     })
     window.socket.send('password', this.state.password);
+
   }
   handleTypePassword=(event, value)=>{
     this.setState({
       password:value
+    }, ()=>{
+      this.props.onHandleGeth?this.props.onHandleGeth(value):"";
     });
   }
 
@@ -343,7 +371,7 @@ class App extends Component {
       contractAddress:"",
       account:"",
       isSyncing:true,
-      gethPasswordEntered:false,
+      //gethPasswordEntered:false,
       successSearch:false,
       cost:0,
       showEntry:false,
@@ -352,7 +380,10 @@ class App extends Component {
       addedEncryption:true,//for entering data
       historicalData:[],
       currentProgress:0,
+      unHashedId:"",
+      hashedId:"",
       //hasAccount:false,
+      gethPassword:"",
       password:"",//for entereing data
       attributeValue:"", //for entering data
       attributeType:0 //for entering ata
@@ -375,17 +406,27 @@ class App extends Component {
       this.setState(arg);
     })
     window.socket.on('cost', (event, arg) => {
+
+      /**temprorary! */
+      const myIds=getIds();
+      window.socket.send('ids', myIds.hashId);
+      
+      /**End temporary */
       console.log(arg);
       this.setState({
-        cost:arg
+        cost:arg,
+        /**temporary */
+        hashId:myIds.hashId,
+        unHashedId:myIds.unHashedId
+        /**end temprorary */
       });
     })
-    window.socket.on('petId', (event, arg) => {
+    /*window.socket.on('petId', (event, arg) => {
       console.log(arg);
       this.setState({
         petId:arg
       });
-    })
+    })*/
     window.socket.on('contractAddress', (event, arg) => {
       this.setState({
         contractAddress:arg
@@ -405,7 +446,7 @@ class App extends Component {
     })
     window.socket.on('retrievedData', (event, arg) => {
       console.log(arg);
-      this.retrievedData(arg);
+      this.retrievedData(Object.assign(parseResults(arg.value), arg.timestamp));
 
     })
   }
@@ -450,7 +491,8 @@ class App extends Component {
   }
   submitAttribute=(formattedAttribute, attVal)=>{
     if(this.state.moneyInAccount>this.state.cost){
-      window.socket.send('addAttribute', formattedAttribute)
+
+      window.socket.send('addAttribute', {message:CryptoJS.AES.encrypt(formattedAttribute, this.state.unHashedId).toString(), hashId:this.state.hashId, password:this.state.gethPassword});
       this.setState({
         historicalData:this.state.historicalData.concat([{timestamp:new Date(), attributeText:attVal, attributeType:this.state.attributeType, isEncrypted:this.state.addedEncryption}]),
         showEntry:false
@@ -484,6 +526,11 @@ class App extends Component {
       account:account
     })
   }
+  onGethPassword=(gethPassword)=>{
+    this.setState({
+      gethPassword:gethPassword
+    });
+  }
   entryValidation=()=>{
     return !(this.state.petId&&(this.state.password||!this.state.addedEncryption)&&this.state.attributeValue);
   }
@@ -514,11 +561,12 @@ class App extends Component {
         onCheck={this.toggleAdditionalEncryption}
         cost={this.state.cost}
         onText={this.onAttributeValue}
-        shouldDisable={!this.state.petId}
+        shouldDisable={!this.state.hashId}
         onSubmit={this.onSubmit}
         onPassword={this.setPassword}
         isChecked={this.state.addedEncryption}
         formValidation={this.entryValidation}
+        onGethPassword={this.onGethPassword}
       />
     </Dialog>
     <div style={mainStyle}>
