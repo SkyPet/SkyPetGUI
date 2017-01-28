@@ -1,7 +1,7 @@
 import React,  {  Component } from 'react';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import Flexbox from 'flexbox-react';
-
+import update from 'immutability-helper';
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
@@ -25,10 +25,8 @@ if(!process.env.REACT_APP_ELECTRON){
       obj[key]=value;
       if(!isOpen){
         holdMessages.push(JSON.stringify(obj));
-       // mySocket.send(JSON.stringify(obj));
       }
       else{
-        console.log(obj);
         mySocket.send(JSON.stringify(obj));
       }
       
@@ -87,7 +85,6 @@ const formatAttribute=(attributeType, attributeValue)=>{
 const parseResults=(result)=>{ 
     //result is an object.  if data is encrypted, MUST have an "addedEncryption" key.
     try{ 
-      //console.log(result);
         const parsedResult=JSON.parse(result);
         return Object.keys(parsedResult).filter((val)=>{
             return val!=='addedEncryption';
@@ -99,7 +96,6 @@ const parseResults=(result)=>{
             }  
         }, {attributeType:'', attributeText:'', isEncrypted:false})
     }catch(e){
-        console.log(e);
         return {attributeType:"generic", attributeText:result, isEncrypted:false};
     }
 }
@@ -123,6 +119,12 @@ class TblRow extends Component {/*=({attributeText, isEncrypted, onDecrypt, time
       password:"",
       showPasswordModal:false
     }
+  }
+  componentWillReceiveProps(nextProps){
+    nextProps.isEncrypted!==this.state.isEncrypted||nextProps.attributeText!==this.state.attributeText?this.setState({
+      isEncrypted:nextProps.isEncrypted,
+      attributeText:nextProps.attributeText
+    }):"";
   }
   onDecrypt=()=>{
     this.setState({
@@ -297,7 +299,6 @@ class GethLogin extends Component{
       password:""
     };
     window.socket.on('passwordError', (event, arg)=>{
-      console.log(arg);
       this.setState({error:arg, waitingResults:false}, 
         ()=>{
           setTimeout(()=>{
@@ -305,7 +306,6 @@ class GethLogin extends Component{
             error:""
         })}, msToWait)}  )});
     window.socket.on('successLogin', (event, arg)=>{
-      console.log(arg);
       this.setState({
         waitingResults:false
       })
@@ -405,7 +405,6 @@ class App extends Component {
       window.socket.send('id', myIds.hashId);
       
       /**End temporary */
-      console.log(arg);
       this.setState({
         cost:arg,
         /**temporary */
@@ -414,19 +413,12 @@ class App extends Component {
         /**end temprorary */
       });
     })
-    /*window.socket.on('petId', (event, arg) => {
-      console.log(arg);
-      this.setState({
-        petId:arg
-      });
-    })*/
     window.socket.on('contractAddress', (event, arg) => {
       this.setState({
         contractAddress:arg
       });
     })
     window.socket.on('passwordError', (event, arg) => {
-      console.log(arg);
       this.setState({
         passwordError:arg,
         hasSubmitted:false
@@ -439,27 +431,27 @@ class App extends Component {
       });
     })
     window.socket.on('attributeAdded', (event, arg) => {
-      console.log(arg);
       this.setState({
+        //showEntry:false,
         passwordError:"",
+        password:"",
         hasSubmitted:false,
         showEntry:false
+      }, ()=>{
+        this.retrievedData(this.state.historicalData.concat([{timestamp:new Date().toISOString(), attributeText:"Your data will show soon", attributeType:this.state.attributeType, isEncrypted:false}]))
       });
     })
     window.socket.on('moneyInAccount', (event, arg) => {
-      console.log(arg);
       this.setState({
         moneyInAccount:arg
       });
     })
     window.socket.on('error', (event, arg) => {
-      console.log(arg);
       this.setState({
         showError:arg
       });
     })
     window.socket.on('retrievedData', (event, arg) => {
-      console.log(arg);
       this.retrievedData(arg.map((val, index)=>{
         const parsedResult=CryptoJS.AES.decrypt(val.value, this.state.unHashedId).toString(CryptoJS.enc.Utf8);
         return Object.assign(parseResults(parsedResult), {timestamp:val.timestamp})
@@ -468,10 +460,7 @@ class App extends Component {
     })
   }
   retrievedData=(arg)=>{
-    this.setState({
-      successSearch:arg[0]?true:false,
-      historicalData:arg,
-    });
+    this.setState(update(this.state, {successSearch:{$set:arg[0]?true:false}, historicalData:{$set:arg}}));
   }
   onAttributeValue=(event, value)=>{
       this.setState({
@@ -510,14 +499,8 @@ class App extends Component {
     if(this.state.moneyInAccount>this.state.cost){
       window.socket.send('addAttribute', {message:CryptoJS.AES.encrypt(JSON.stringify(formattedAttribute), this.state.unHashedId).toString(), hashId:this.state.hashId, password:this.state.password});
       this.setState({
-        //historicalData:this.state.historicalData.concat([{timestamp:new Date(), attributeText:attVal, attributeType:this.state.attributeType, isEncrypted:this.state.addedEncryption}]),
-        //showEntry:false,
-        password:"",
         hasSubmitted:true
-    }/*,()=>{
-        this.retrievedData(this.state.historicalData);
-      }*/);
-      
+    });
     }
     else{
       alert("Not enough money");
@@ -544,11 +527,6 @@ class App extends Component {
       account:account
     })
   }
-  /*onGethPassword=(gethPassword)=>{
-    this.setState({
-      gethPassword:gethPassword
-    });
-  }*/
   entryValidation=()=>{
     return !(this.state.unHashedId&&(this.state.password||!this.state.addedEncryption)&&this.state.attributeValue);
   }
@@ -594,7 +572,6 @@ class App extends Component {
         <RaisedButton primary={true} label="Add Entry" onClick={this.showEntryModal}/>
         <TableColumns success={this.state.successSearch}>
         {this.state.historicalData.map((val, index)=>{
-          //console.log(val);
           return(
               <TblRow key={index} timestamp={val.timestamp.toString()} attributeText={val.attributeText}  label={selection[val.attributeType]||"Unknown"} isEncrypted={val.isEncrypted}/>
           );
