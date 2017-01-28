@@ -6,7 +6,7 @@ import Flexbox from 'flexbox-react';
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
 import CryptoJS from "crypto-js";
-//const SHA256 = require("crypto-js/sha256");
+import { keccak_256 } from 'js-sha3';
 if(!process.env.REACT_APP_ELECTRON){
   var mySocket=new WebSocket("ws://localhost:4000", "protocolOne"); 
   var isOpen=false;
@@ -80,7 +80,7 @@ const msToWait=3000;
 const getIds=()=>{
     return {
         unHashedId:"MyId4",
-        hashId:CryptoJS.SHA256("MyId4").toString()
+        hashId:"0x"+keccak_256("MyId4")
     }
 }
 const formatAttribute=(attributeType, attributeValue)=>{
@@ -91,6 +91,7 @@ const formatAttribute=(attributeType, attributeValue)=>{
 const parseResults=(result)=>{ 
     //result is an object.  if data is encrypted, MUST have an "addedEncryption" key.
     try{ 
+      console.log(result);
         const parsedResult=JSON.parse(result);
         return Object.keys(parsedResult).filter((val)=>{
             return val!=='addedEncryption';
@@ -446,7 +447,10 @@ class App extends Component {
     })
     window.socket.on('retrievedData', (event, arg) => {
       console.log(arg);
-      this.retrievedData(Object.assign(parseResults(arg.value), arg.timestamp));
+      this.retrievedData(arg.map((val, index)=>{
+        const parsedResult=CryptoJS.AES.decrypt(val.value, this.state.unHashedId).toString(CryptoJS.enc.Utf8);
+        return Object.assign(parseResults(parsedResult), val.timestamp)
+      }));
 
     })
   }
