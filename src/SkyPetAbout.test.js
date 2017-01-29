@@ -9,7 +9,7 @@ it('renders without crashing', () => {
 });
 it('renders without crashing', () => {
   const div = document.createElement('div');
-  ReactDOM.render(<MuiThemeProvider muiTheme={getMuiTheme()}><AboutModal hideModal={()=>{}} onClick={()=>{}}contractAddress="MyAddress" blockChainView="myView" /></MuiThemeProvider>, div);
+  ReactDOM.render(<MuiThemeProvider muiTheme={getMuiTheme()}><AboutModal hideModal={false} onClick={()=>{}} contractAddress="MyAddress" blockChainView="myView" /></MuiThemeProvider>, div);
 });
 
 

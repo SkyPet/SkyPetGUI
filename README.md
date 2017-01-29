@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/SkyPet/SkyPetGUI.svg?branch=master)](https://travis-ci.org/SkyPet/SkyPetGUI)
 #Skypet HTML
 
 This is the UI for all SkyPet Apps.  It has conditional compilation for modules depending on what needs to be compiled for.  For DEVELOPMENT ONLY!.  Run with `npm start`.

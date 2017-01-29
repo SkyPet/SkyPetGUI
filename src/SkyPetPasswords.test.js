@@ -6,7 +6,7 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 it('renders without crashing', () => {
   const div = document.createElement('div');
-  ReactDOM.render(<MuiThemeProvider muiTheme={getMuiTheme()}><PasswordModal onPassword={()=>{}} setPassword={()=>{}} hidePasswordModal={()=>{}} askForPassword={()=>{}} /></MuiThemeProvider>, div);
+  ReactDOM.render(<MuiThemeProvider muiTheme={getMuiTheme()}><PasswordModal onPassword={()=>{}} setPassword={()=>{}} hidePasswordModal={()=>{}} askForPassword={true} /></MuiThemeProvider>, div);
 });
 it('renders without crashing', () => {
   const div = document.createElement('div');
