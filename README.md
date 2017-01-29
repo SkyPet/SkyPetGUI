@@ -1,17 +1,18 @@
 [![Build Status](https://travis-ci.org/SkyPet/SkyPetGUI.svg?branch=master)](https://travis-ci.org/SkyPet/SkyPetGUI)
-#Skypet HTML
+# Skypet HTML
 
-This is the UI for all SkyPet Apps.  It has conditional compilation for modules depending on what needs to be compiled for.  For DEVELOPMENT ONLY!.  Run with `npm start`.
+This is the UI for all SkyPet Apps.  It has conditional compilation for modules depending on what needs to be compiled for.  For DEVELOPMENT ONLY!  Using `npm run build` WILL CRASH!  This is intended as this client will be used in integration with Electron, Android, and web apps.  Run with `npm start`.
 
-To integrate into production, use an external build configuration.  See, for example, the implementation in <a href="https://github.com/skyPet/SkyPetDesktop>SkyPetDesktop</a>.
+To integrate into production, use an external build configuration.  See, for example, the implementation in [SkyPetDesktop](https://github.com/skyPet/SkyPetDesktop).
 
-##Tests
+## Tests
 Run 
 `npm test -- --coverage`
-for unit tests.  Integration with an external build tool is described in <a href="https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md#continuous-integration">The create react app docs</a>
+for unit tests.  Integration with an external build tool is described in
+[the create-react-app docs](https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md#continuous-integration).
 
 
-#Base Documentation
+# Base Documentation
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 
