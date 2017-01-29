@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/SkyPet/SkyPetGUI.svg?branch=master)](https://travis-ci.org/SkyPet/SkyPetGUI)
+[![codecov](https://codecov.io/gh/SkyPet/SkyPetGUI/branch/master/graph/badge.svg)](https://codecov.io/gh/SkyPet/SkyPetGUI)
 # Skypet HTML
 
 This is the UI for all SkyPet Apps.  It has conditional compilation for modules depending on what needs to be compiled for.  For DEVELOPMENT ONLY!  Using `npm run build` WILL CRASH!  This is intended as this client will be used in integration with Electron, Android, and web apps.  Run with `npm start`.
