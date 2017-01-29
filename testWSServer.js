@@ -33,7 +33,7 @@ wss.on('connection', function(ws) {
                 }
                 ws.send(makeObj('sync', {currentProgress:progress, isSyncing:true}));
                 
-            }, 1000);
+            }, 100);
         }
         else if(val.id){
             ws.send(makeObj('retrievedData', [{timestamp:new Date().toISOString(), value:"Hello World", isEncrypted:false, attributeType:"0"}]))

@@ -44,3 +44,13 @@ export const AboutModal=({hideModal, onClick, contractAddress, blockChainView})=
       The contract that governs this is available at {contractAddress} on the blockchain.  See it <a href={blockChainView+contractAddress} target="_blank">here.</a> </p>
 </Dialog>
 
+AboutComponent.propTypes = {
+  contractAddress: React.PropTypes.string.isRequired,
+  blockChainView: React.PropTypes.string.isRequired
+};
+AboutModal.propTypes = {
+  hideModal: React.PropTypes.bool.isRequired,
+  onClick: React.PropTypes.func.isRequired,
+  contractAddress: React.PropTypes.string.isRequired,
+  blockChainView: React.PropTypes.string.isRequired
+};

@@ -13,3 +13,10 @@ export const CustomToolBar=({account, moneyInAccount, contractAddress, blockChai
     <AboutComponent blockChainView={blockChainView} contractAddress={contractAddress}/>
   </ToolbarGroup>
 </Toolbar>
+
+CustomToolBar.propTypes = {
+  account:React.PropTypes.string.isRequired,
+  moneyInAccount:React.PropTypes.number.isRequired,
+  contractAddress:React.PropTypes.string.isRequired,
+  blockChainView:React.PropTypes.string.isRequired
+};

@@ -8,19 +8,22 @@ export class GethLogin extends Component{
       waitingResults:false,
       password:""
     };
-    window.socket.on('passwordError', (event, arg)=>{
-      this.setState({error:arg, waitingResults:false}, 
-        ()=>{
-          setTimeout(()=>{
-          this.setState({
-            error:""
-        })}, this.props.msToWait)}  )});
-    window.socket.on('successLogin', (event, arg)=>{
-      this.setState({
-        waitingResults:false
-      })
-      this.props.onSuccessLogin?this.props.onSuccessLogin(arg):"";
-    });
+    if(window.socket){
+      window.socket.on('passwordError', (event, arg)=>{
+        this.setState({error:arg, waitingResults:false}, 
+            ()=>{
+            setTimeout(()=>{
+            this.setState({
+                error:""
+            })}, this.props.msToWait)}  )});
+      window.socket.on('successLogin', (event, arg)=>{
+        this.setState({
+            waitingResults:false
+        })
+        this.props.onSuccessLogin?this.props.onSuccessLogin(arg):"";
+      });
+    }
+    
   }
   handleSubmitPassword=()=>{
     this.setState({
@@ -48,3 +51,11 @@ export class GethLogin extends Component{
     );
   }
 }
+
+GethLogin.propTypes = {
+  msToWait:React.PropTypes.number.isRequired,
+  text:React.PropTypes.string.isRequired,
+  centerComponent:React.PropTypes.object,
+  onSuccessLogin:React.PropTypes.func,
+  onHandleGeth:React.PropTypes.func
+};

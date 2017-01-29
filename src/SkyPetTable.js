@@ -86,3 +86,14 @@ export const TableColumns=({success, children})=>
     </TableBody>
     :null}
 </Table>
+
+
+TableColumns.propTypes = {
+  success: React.PropTypes.bool.isRequired,
+  children: React.PropTypes.node.isRequired
+};
+TblRow.propTypes = {
+  isEncrypted: React.PropTypes.bool.isRequired,
+  attributeText: React.PropTypes.string.isRequired,
+  msToWait: React.PropTypes.number.isRequired
+};

@@ -11,7 +11,7 @@ import {CustomToolBar} from './SkyPetToolbar';
 injectTapEventPlugin();
 import CryptoJS from "crypto-js";
 import { keccak_256 } from 'js-sha3';
-if(!process.env.REACT_APP_ELECTRON){
+if(!process.env.REACT_APP_ELECTRON&&window.WebSocket){
   var mySocket=new WebSocket("ws://localhost:4000", "protocolOne"); 
   var isOpen=false;
   var holdMessages=[];
@@ -78,7 +78,7 @@ const formatAttribute=(attributeType, attributeValue)=>{
   obj[attributeType]=attributeValue;
   return obj;
 }
-const parseResults=(result)=>{ 
+export const parseResults=(result)=>{ 
     //result is an object.  if data is encrypted, MUST have an "addedEncryption" key.
     try{ 
         const parsedResult=JSON.parse(result);
@@ -121,77 +121,79 @@ class App extends Component {
       attributeValue:"", //for entering data
       attributeType:0 //for entering ata
     };
-    window.socket.send('startEthereum', 'ping')
-    window.socket.on('account', (event, arg) => {
-      console.log(arg);
-      this.setState({
-        account:arg
-      });
-    })
-    window.socket.on('sync', (event, arg) => {
-      console.log(arg);
-      this.setState(arg);
-    })
-    window.socket.on('cost', (event, arg) => {
+    if(window.socket){
+      window.socket.send('startEthereum', 'ping');
+      window.socket.on('account', (event, arg) => {
+        console.log(arg);
+        this.setState({
+          account:arg
+        });
+      })
+      window.socket.on('sync', (event, arg) => {
+        console.log(arg);
+        this.setState(arg);
+      })
+      window.socket.on('cost', (event, arg) => {
 
-      /**temprorary! */
-      const myIds=getIds();
-      window.socket.send('id', myIds.hashId);
-      
-      /**End temporary */
-      this.setState({
-        cost:arg,
-        /**temporary */
-        hashId:myIds.hashId,
-        unHashedId:myIds.unHashedId
-        /**end temprorary */
-      });
-    })
-    window.socket.on('contractAddress', (event, arg) => {
-      this.setState({
-        contractAddress:arg
-      });
-    })
-    window.socket.on('passwordError', (event, arg) => {
-      this.setState({
-        passwordError:arg,
-        hasSubmitted:false
-      }, ()=>{
-        setTimeout(()=>{
-          this.setState({
-            passwordError:""
-        })}, msToWait
-        )
-      });
-    })
-    window.socket.on('attributeAdded', (event, arg) => {
-      this.setState({
-        //showEntry:false,
-        passwordError:"",
-        password:"",
-        hasSubmitted:false,
-        showEntry:false
-      }, ()=>{
-        this.retrievedData(this.state.historicalData.concat([{timestamp:new Date().toISOString(), attributeText:"Your data will show soon", attributeType:this.state.attributeType, isEncrypted:false}]))
-      });
-    })
-    window.socket.on('moneyInAccount', (event, arg) => {
-      this.setState({
-        moneyInAccount:arg
-      });
-    })
-    window.socket.on('error', (event, arg) => {
-      this.setState({
-        showError:arg
-      });
-    })
-    window.socket.on('retrievedData', (event, arg) => {
-      this.retrievedData(arg.map((val, index)=>{
-        const parsedResult=CryptoJS.AES.decrypt(val.value, this.state.unHashedId).toString(CryptoJS.enc.Utf8);
-        return Object.assign(parseResults(parsedResult), {timestamp:val.timestamp})
-      }));
+        /**temprorary! */
+        const myIds=getIds();
+        window.socket?window.socket.send('id', myIds.hashId):"";
+        
+        /**End temporary */
+        this.setState({
+          cost:arg,
+          /**temporary */
+          hashId:myIds.hashId,
+          unHashedId:myIds.unHashedId
+          /**end temprorary */
+        });
+      })
+      window.socket.on('contractAddress', (event, arg) => {
+        this.setState({
+          contractAddress:arg
+        });
+      })
+      window.socket.on('passwordError', (event, arg) => {
+        this.setState({
+          passwordError:arg,
+          hasSubmitted:false
+        }, ()=>{
+          setTimeout(()=>{
+            this.setState({
+              passwordError:""
+          })}, msToWait
+          )
+        });
+      })
+      window.socket.on('attributeAdded', (event, arg) => {
+        this.setState({
+          //showEntry:false,
+          passwordError:"",
+          password:"",
+          hasSubmitted:false,
+          showEntry:false
+        }, ()=>{
+          this.retrievedData(this.state.historicalData.concat([{timestamp:new Date().toISOString(), attributeText:"Your data will show soon", attributeType:this.state.attributeType, isEncrypted:false}]))
+        });
+      })
+      window.socket.on('moneyInAccount', (event, arg) => {
+        this.setState({
+          moneyInAccount:arg
+        });
+      })
+      window.socket.on('error', (event, arg) => {
+        this.setState({
+          showError:arg
+        });
+      })
+      window.socket.on('retrievedData', (event, arg) => {
+        this.retrievedData(arg.map((val, index)=>{
+          const parsedResult=CryptoJS.AES.decrypt(val.value, this.state.unHashedId).toString(CryptoJS.enc.Utf8);
+          return Object.assign(parseResults(parsedResult), {timestamp:val.timestamp})
+        }));
 
-    })
+      })
+    }
   }
   retrievedData=(arg)=>{
     this.setState(update(this.state, {successSearch:{$set:arg[0]?true:false}, historicalData:{$set:arg}}));

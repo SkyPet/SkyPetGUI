@@ -2,9 +2,15 @@
 
 This is the UI for all SkyPet Apps.  It has conditional compilation for modules depending on what needs to be compiled for.  For DEVELOPMENT ONLY!.  Run with `npm start`.
 
-To integrate into production, use an external CLI.  See, for example, the implementation in SkyPetDesktop.
+To integrate into production, use an external build configuration.  See, for example, the implementation in <a href="https://github.com/skyPet/SkyPetDesktop>SkyPetDesktop</a>.
+
+##Tests
+Run 
+`npm test -- --coverage`
+for unit tests.  Integration with an external build tool is described in <a href="https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md#continuous-integration">The create react app docs</a>
 
 
+#Base Documentation
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 

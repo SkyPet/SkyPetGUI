@@ -6,3 +6,13 @@ export const MyProgressBar=({value, centerComponent})=>{
 export const SyncWrap=({isSyncing, children, progress, centerComponent})=>{
   return isSyncing?<MyProgressBar centerComponent={centerComponent} value={progress}/>:children
 }
+MyProgressBar.propTypes = {
+  value:React.PropTypes.number.isRequired,
+  centerComponent:React.PropTypes.object
+};
+SyncWrap.propTypes = {
+  isSyncing:React.PropTypes.bool.isRequired,
+  progress:React.PropTypes.number.isRequired,
+  centerComponent:React.PropTypes.object,
+  children:React.PropTypes.node.isRequired
+};
