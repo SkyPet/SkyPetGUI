@@ -43,10 +43,8 @@ export class GethLogin extends Component{
   render() {
     return (
       <div style={this.props.centerComponent}>
-        <div>
           <span>{this.props.text}</span>
           <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword} hasSubmitted={this.state.waitingResults} error={this.state.error} />
-        </div>
       </div>
     );
   }
