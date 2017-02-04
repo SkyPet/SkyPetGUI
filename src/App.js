@@ -63,7 +63,7 @@ const selection=[
     "Owner", //this can be encrypted
     "Address" //this can be encrypted
 ];
-const centerComponent={display: 'flex', justifyContent: 'center'};
+const centerComponent={display: 'flex', alignItems: 'center', flexDirection:'column'};
 const msToWait=3000;
 /**This is testing only! */
 const getIds=()=>{
@@ -117,16 +117,23 @@ class App extends Component {
       hasSubmitted:false,
       unHashedId:"",
       hashedId:"",
+      info:"",
       password:"",//for entereing data
       attributeValue:"", //for entering data
       attributeType:0 //for entering ata
     };
     if(window.socket){
-      window.socket.send('startEthereum', 'ping');
+      //window.socket.send('startEthereum', 'ping');
       window.socket.on('account', (event, arg) => {
         console.log(arg);
         this.setState({
           account:arg
+        });
+      })
+      window.socket.on('info', (event, arg) => {
+        console.log(arg);
+        this.setState({
+          info:arg
         });
       })
       window.socket.on('sync', (event, arg) => {
@@ -308,7 +315,7 @@ class App extends Component {
           );
         })}
         </TableColumns>              
-      </div>:<SyncWrap centerComponent={centerComponent} isSyncing={this.state.isSyncing} progress={this.state.currentProgress}>
+      </div>:<SyncWrap centerComponent={centerComponent} isSyncing={this.state.isSyncing} progress={this.state.currentProgress} info={this.state.info}>
         <GethLogin centerComponent={centerComponent} msToWait={msToWait} text="Enter a password to generate your account.  Don't forget this password!" onSuccessLogin={this.onGethLogin}/>
       </SyncWrap>
      

@@ -15,25 +15,29 @@ const makeObj=(key, val)=>{
     return JSON.stringify(obj);
 }
 wss.on('connection', function(ws) {
+    var progress=0;
+    ws.send(makeObj('info', "testinginfo"));
+    var doProgress=setInterval(()=>{
+        progress+=10;
+        if(progress>100){
+            clearInterval(doProgress);
+            
+            //ws.send(makeObj('account', "MyTestAccount"));
+            ws.send(makeObj('moneyInAccount', 100));
+            ws.send(makeObj('cost',1));
+            ws.send(makeObj('sync', {currentProgress:100, isSyncing:false}));
+            
+        }
+        else{
+            ws.send(makeObj('sync', {currentProgress:progress, isSyncing:true}));
+        }
+        
+        
+    }, 100);
     ws.on('message', (msg)=>{
         const val=JSON.parse(msg);
         if(val.startEthereum){
             //console.log(msg)
-            var progress=0;
-            var doProgress=setInterval(()=>{
-                progress+=10;
-                if(progress>100){
-                    clearInterval(doProgress);
-                    
-                    ws.send(makeObj('account', "MyTestAccount"));
-                    ws.send(makeObj('moneyInAccount', 100));
-                    ws.send(makeObj('cost',1));
-                    ws.send(makeObj('sync', {currentProgress:100, isSyncing:false}));
-                    
-                }
-                ws.send(makeObj('sync', {currentProgress:progress, isSyncing:true}));
-                
-            }, 100);
         }
         else if(val.id){
             ws.send(makeObj('retrievedData', [{timestamp:new Date().toISOString(), value:"Hello World", isEncrypted:false, attributeType:"0"}]))
