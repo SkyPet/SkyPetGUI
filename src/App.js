@@ -116,7 +116,7 @@ class App extends Component {
       currentProgress:0,
       hasSubmitted:false,
       unHashedId:"",
-      hashedId:"",
+      hashId:"",
       info:"",
       password:"",//for entereing data
       attributeValue:"", //for entering data
