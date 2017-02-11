@@ -31,8 +31,8 @@ export const SelectAttribute=({selection, value, onSelect})=>
 export const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
 <form onSubmit={(e)=>{e.preventDefault();onCreate();}}>
     <TextField autoFocus floatingLabelText="Password" type="password" onChange={onType}/>
-    {hasSubmitted?<CircularProgress size={40}/>:error?<RaisedButton primary={true} label={error} />:
-    <RaisedButton primary={true} label="Submit"/>}
+    {hasSubmitted?<CircularProgress size={40}/>:error?<RaisedButton type="submit" primary={true} label={error} />:
+    <RaisedButton type="submit" primary={true} label="Submit"/>}
 </form>
 
 
