@@ -161,6 +161,7 @@ class App extends Component {
         });
       })
       window.socket.on('passwordError', (event, arg) => {
+        console.log(arg);
         this.setState({
           passwordError:arg,
           hasSubmitted:false
@@ -189,6 +190,7 @@ class App extends Component {
         });
       })
       window.socket.on('error', (event, arg) => {
+        console.log(arg);
         this.setState({
           showError:arg
         });
