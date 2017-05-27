@@ -7,7 +7,7 @@ export const CustomToolBar=({account, moneyInAccount, contractAddress, blockChai
    <ToolbarTitle text="SkyPet" />
     {`Account: ${account}`}
   <ToolbarSeparator/>
-  {account?moneyInAccount==0?"Ether required!  Send the account some Ether to continue.":`Balance: ${moneyInAccount}`:""}
+  {account?moneyInAccount===0?"Ether required!  Send the account some Ether to continue.":`Balance: ${moneyInAccount}`:""}
   </ToolbarGroup>
   <ToolbarGroup>
     <AboutComponent blockChainView={blockChainView} contractAddress={contractAddress}/>

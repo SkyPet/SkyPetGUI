@@ -32,19 +32,26 @@ export class GethLogin extends Component{
     window.socket.send('password', this.state.password);
 
   }
-  handleTypePassword=(event, value)=>{
+  handleTypePassword=(event, password)=>{
     this.setState({
-      password:value
+      password
     }, ()=>{
-      this.props.onHandleGeth?this.props.onHandleGeth(value):"";
+      this.props.onHandleGeth?this.props.onHandleGeth(password):"";
     });
   }
 
   render() {
+    const {waitingResults, error}=this.state
+    const {centerComponent, text}=this.props
     return (
-      <div style={this.props.centerComponent}>
-          <span>{this.props.text}</span>
-          <SubmitPassword onType={this.handleTypePassword} onCreate={this.handleSubmitPassword} hasSubmitted={this.state.waitingResults} error={this.state.error} />
+      <div style={centerComponent}>
+          <span>{text}</span>
+          <SubmitPassword 
+            onType={this.handleTypePassword} 
+            onCreate={this.handleSubmitPassword} 
+            hasSubmitted={waitingResults} 
+            error={error} 
+          />
       </div>
     );
   }

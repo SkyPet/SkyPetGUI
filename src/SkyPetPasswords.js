@@ -36,7 +36,13 @@ export const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
 </form>
 
 
-export const EntryForm=({selection, selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, passwordError, hasSubmitted, formValidation})=>
+//export class EntryForm extends Component {
+  
+ export const EntryForm =({selection, selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, passwordError, hasSubmitted, formValidation})=>
+  /*state={
+    selectValue:0,
+    attributeValue:"",
+  }*/
 <form onSubmit={(e)=>{e.preventDefault();formValidation()?onSubmit():"";}}>
   <SelectAttribute selection={selection} value={selectValue} onSelect={onSelect}/>
   <br/>
@@ -53,7 +59,13 @@ export const EntryForm=({selection, selectValue, shouldDisable, cost, onSelect, 
     defaultChecked={true} 
     onCheck={onCheck}/>
   <br/>
-  <TextField disabled={shouldDisable} fullWidth={true} floatingLabelText="SkyPet Password" type="password" onChange={onPassword}/>
+  <TextField 
+    disabled={shouldDisable} 
+    fullWidth={true} 
+    floatingLabelText="SkyPet Password" 
+    type="password" 
+    onChange={onPassword}
+  />
   {hasSubmitted?<CircularProgress size={40}/>:
   <RaisedButton 
     fullWidth={true}
