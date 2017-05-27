@@ -95,27 +95,29 @@ const encryptToString=(decryptedValue, password)=>CryptoJS.AES.encrypt(decrypted
 
 const hasPasswordOrPasswordNotRequired=(password, requiresEncryption)=>password||!requiresEncryption 
 
+const initState={
+  contractAddress:"",
+  account:"",
+  isSyncing:true,
+  successSearch:false,
+  cost:0,
+  showEntry:false,
+  moneyInAccount:0,
+  passwordError:"",
+  addedEncryption:true,//for entering data
+  historicalData:[],
+  currentProgress:0,
+  hasSubmitted:false,
+  unHashedId:"",
+  hashId:"",
+  info:"",
+  password:"",//for entereing data
+  attributeValue:"", //for entering data
+  attributeType:0 //for entering ata
+}
+
 class App extends Component {
-  state={
-    contractAddress:"",
-    account:"",
-    isSyncing:true,
-    successSearch:false,
-    cost:0,
-    showEntry:false,
-    moneyInAccount:0,
-    passwordError:"",
-    addedEncryption:true,//for entering data
-    historicalData:[],
-    currentProgress:0,
-    hasSubmitted:false,
-    unHashedId:"",
-    hashId:"",
-    info:"",
-    password:"",//for entereing data
-    attributeValue:"", //for entering data
-    attributeType:0 //for entering ata
-  };
+  state=initState
   eventHandler={
     account:(account) => {
       this.setState({account})
@@ -281,7 +283,6 @@ class App extends Component {
         onPassword={this.setPassword}
         passwordError={passwordError}
         hasSubmitted={hasSubmitted}
-        isChecked={addedEncryption}
         formValidation={this.entryValidation}
       />
     </Dialog>

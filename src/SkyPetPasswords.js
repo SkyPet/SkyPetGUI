@@ -23,9 +23,9 @@ export const SelectAttribute=({selection, value, onSelect})=>
   defaultValue={0}
   fullWidth={true}
 >
-  {selection.map((val, index)=>{
-      return(<MenuItem key={index} value={index} primaryText={val}/>);
-  })}
+  {selection.map((val, index)=>(
+    <MenuItem key={index} value={index} primaryText={val}/>
+  ))}
 </SelectField>
 
 export const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
@@ -36,13 +36,8 @@ export const SubmitPassword=({onCreate, onType, hasSubmitted=false, error=""})=>
 </form>
 
 
-//export class EntryForm extends Component {
-  
- export const EntryForm =({selection, selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, isChecked, passwordError, hasSubmitted, formValidation})=>
-  /*state={
-    selectValue:0,
-    attributeValue:"",
-  }*/
+
+ export const EntryForm =({selection, selectValue, shouldDisable, cost, onSelect, onText, onCheck, onSubmit, onPassword, passwordError, hasSubmitted, formValidation})=>
 <form onSubmit={(e)=>{e.preventDefault();formValidation()?onSubmit():"";}}>
   <SelectAttribute selection={selection} value={selectValue} onSelect={onSelect}/>
   <br/>
@@ -103,7 +98,6 @@ EntryForm.propTypes = {
   onCheck:React.PropTypes.func.isRequired, 
   onSubmit:React.PropTypes.func.isRequired, 
   onPassword:React.PropTypes.func.isRequired, 
-  isChecked:React.PropTypes.bool.isRequired, 
   passwordError:React.PropTypes.string.isRequired, 
   hasSubmitted:React.PropTypes.bool.isRequired, 
   formValidation:React.PropTypes.func.isRequired
